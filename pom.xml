@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.1.2</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.digicore</groupId>
+	<artifactId>automata-backoffice-lib</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>automata-backoffice-lib</name>
+	<description>Automata Backoffice Lib</description>
+	<properties>
+		<java.version>17</java.version>
+		<querydsl.version>5.0.0</querydsl.version>
+		<archiva.url>https://archiva.digicoreltds.com/repository/internal/</archiva.url>
+		<archiva.client.release.url>https://archiva.digicoreltds.com/repository/Billent_Release/</archiva.client.release.url>
+	</properties>
+	<dependencies>
+
+		<!-- Digicore Dependencies Start-->
+
+		<dependency>
+			<groupId>com.digicore</groupId>
+			<artifactId>otp-lib</artifactId>
+			<version>1.0.4-billent-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.digicore</groupId>
+			<artifactId>automata-data-lib</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.digicore</groupId>
+			<artifactId>registhentication-lib</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.digicore</groupId>
+			<artifactId>common-util</artifactId>
+			<version>1.0.2-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.digicore</groupId>
+			<artifactId>request-processor-lib</artifactId>
+			<version>1.0.4-billent-SNAPSHOT</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.digicore</groupId>
+			<artifactId>zeus-api-helper</artifactId>
+			<version>1.0.4-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.digicore</groupId>
+			<artifactId>recibo</artifactId>
+			<version>1.0.4-SNAPSHOT</version>
+		</dependency>
+
+		<!-- Digicore Dependencies Ends-->
+
+<!--		misc start-->
+
+		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.13.0</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.5</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>2.0</version>
+		</dependency>
+
+
+
+
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>3.11.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>archiva</id>
+			<name>Archiva Managed Internal Repository</name>
+			<url>${archiva.client.release.url}</url>
+		</repository>
+		<repository>
+			<id>oss-jfrog-artifactory</id>
+			<name>oss-jfrog-artifactory-releases</name>
+			<url>http://oss.jfrog.org/artifactory/oss-release-local</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>archiva</id>
+			<name>Archiva Repository</name>
+			<url>${archiva.url}</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<distributionManagement>
+		<repository>
+			<id>archiva</id>
+			<name>External Release Repository</name>
+			<url>${archiva.url}</url>
+		</repository>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.7</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+
+		</plugins>
+	</build>
+
+
+
+</project>
