@@ -1,16 +1,21 @@
 package com.digicore.automata.data.lib.modules.backoffice.card_scheme_service.implementation;
 
+import com.azure.core.http.rest.Page;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardDto;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardRequest;
+import com.digicore.automata.data.lib.modules.backoffice.card_scheme.model.CardProfile;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.repository.CardRepository;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.specification.CardProfileSpecification;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme_service.CardSchemeService;
 import com.digicore.automata.data.lib.modules.common.settings.service.SettingService;
 import com.digicore.registhentication.common.dto.response.PaginatedResponseDTO;
 import com.digicore.registhentication.exceptions.ExceptionHandler;
+import com.digicore.registhentication.registration.enums.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import static com.digicore.automata.data.lib.modules.exception.messages.CardSchemeErrorMessages.*;
 
 /**
  * @author peaceobute
@@ -25,6 +30,7 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     private final ExceptionHandler<String, String, HttpStatus, String> exceptionHandler;
     private final SettingService service;
 
+
     /**
      * create card Scheme
      * @param cardRequest
@@ -34,41 +40,149 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     public CardDto createCardScheme(CardRequest cardRequest) {
         if (cardRepository.existsByCardSchemeId(cardRequest.getCardSchemeId())) {
             throw exceptionHandler.processCustomException(
-                    service.retrieveValue(ISSUER_ALREADY_EXISTS_MESSAGE_KEY),
-                    service.retrieveValue(ISSUER_ALREADY_EXISTS_CODE_KEY),
+                    service.retrieveValue(CARD_ALREADY_EXISTS_MESSAGE_KEY),
+                    service.retrieveValue(CARD_ALREADY_EXISTS_CODE_KEY),
                     HttpStatus.CONFLICT
             );
         }
 
+        CardProfile cardProfile = buildNewCardProfile(cardRequest);
+        CardProfile savedCardProfile = cardRepository.save(cardProfile);
+
+        return mapCardProfileToDto(savedCardProfile);
     }
 
+    /**
+     * enable card Scheme
+     * @param cardSchemeId
+     */
     @Override
     public void enableCardScheme(String cardSchemeId) {
+        CardProfile singleCard = cardRepository.findByCardStatusAndCardSchemeId(Status.INACTIVE,
+                cardSchemeId).orElseThrow(() ->
+                exceptionHandler.processBadRequestException(
+                        service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                        service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                ));
+        singleCard.setCardStatus(Status.ACTIVE);
+        cardRepository.save(singleCard);
 
     }
 
+    /**
+     * disable card Scheme
+     * @param cardSchemeId
+     */
     @Override
     public void disableCardScheme(String cardSchemeId) {
-
+        CardProfile singleCard = cardRepository.findByCardStatusAndCardSchemeId(Status.ACTIVE,
+                cardSchemeId).orElseThrow(() ->
+                exceptionHandler.processBadRequestException(
+                        service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                        service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                ));
+        singleCard.setCardStatus(Status.INACTIVE);
+        cardRepository.save(singleCard);
     }
 
+    /**
+     * delete card scheme detail
+     *
+     */
     @Override
     public void deleteCardScheme(String cardSchemeId) {
-
+        CardProfile card = getCardSchemeDetail(cardSchemeId);
+        card.setDeleted(true);
+        cardRepository.save(card);
     }
 
+
+    /**
+     * update card scheme
+     * @param cardSchemeId, cardRequest
+     * @return cardDto
+     */
     @Override
     public CardDto updateCardScheme(String cardSchemeId, CardRequest cardRequest) {
-        return null;
+
+        CardProfile cardProfile = getCardSchemeDetail(cardRequest.getCardSchemeId());
+
+        cardProfile.setCardSchemeName(cardRequest.getCardSchemeName() != null ?
+                cardRequest.getCardSchemeName() : cardProfile.getCardSchemeName());
+        cardProfile.setCardSchemeId(cardRequest.getCardSchemeId() != null ?
+                cardRequest.getCardSchemeId() : cardProfile.getCardSchemeId());
+
+        CardProfile updatedCardProfile = cardRepository.save(cardProfile);
+
+        return mapCardProfileToDto(updatedCardProfile);
+
     }
 
     @Override
     public PaginatedResponseDTO<CardDto> getAllCardSchemes(int pageNumber, int pageSize) {
-        return null;
+
+        Page<CardProfile> issuerPage = cardRepository.findAllByIsDeleted(false, getPageable(pageNumber, pageSize));
+        return getIssuerPaginatedResponse(issuerPage);
+
     }
 
+    /**
+     * view card scheme detail
+     * @param cardSchemeId
+     * @return cardDto
+     */
     @Override
-    public CardDto getCardSchemeDetail(String cardSchemeId) {
-        return null;
+    public CardDto viewCardSchemeDetail(String cardSchemeId) {
+
+        CardProfile card = cardRepository
+               .findFirstByIsDeletedFalseAndCardSchemeIdOrderByCreatedDate(cardSchemeId)
+                .orElseThrow(() ->
+                        exceptionHandler.processBadRequestException(
+                                service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                                service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                        )
+                );
+        return mapCardProfileToDto(card);
+    }
+
+    public CardProfile getCardSchemeDetail(String cardSchemeId){
+       return cardRepository
+                .findFirstByIsDeletedFalseAndCardSchemeIdOrderByCreatedDate(cardSchemeId)
+                .orElseThrow(() ->
+                        exceptionHandler.processBadRequestException(
+                                service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                                service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                        )
+                );
+
+
+    }
+
+
+    /**
+     * create map card entity to card response dto
+     * @param savedCardProfile
+     * @return cardDto
+     */
+    private CardDto mapCardProfileToDto(CardProfile savedCardProfile) {
+        CardDto cardDto = new CardDto();
+        cardDto.setCardSchemeId(savedCardProfile.getCardSchemeId());
+        cardDto.setCardSchemeName(savedCardProfile.getCardSchemeName());
+        cardDto.setCardStatus(savedCardProfile.getCardStatus());
+        cardDto.setDateCreated(savedCardProfile.getCreatedDate());
+        cardDto.setDateLastModified(savedCardProfile.getLastModifiedDate());
+        return cardDto;
+    }
+
+    /**
+     * create map card request to card entity to save in the db
+     * @param cardRequest
+     * @return card profile
+     */
+    private CardProfile buildNewCardProfile(CardRequest cardRequest) {
+        CardProfile profile = new CardProfile();
+        profile.setCardSchemeId(cardRequest.getCardSchemeId());
+        profile.setCardSchemeName(profile.getCardSchemeName());
+        return profile;
     }
 }

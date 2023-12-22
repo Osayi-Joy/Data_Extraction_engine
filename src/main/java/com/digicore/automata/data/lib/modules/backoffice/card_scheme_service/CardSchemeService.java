@@ -24,6 +24,6 @@ public interface CardSchemeService {
 
     PaginatedResponseDTO<CardDto> getAllCardSchemes(int pageNumber, int pageSize);
 
-    CardDto getCardSchemeDetail(String cardSchemeId);
+    CardDto viewCardSchemeDetail(String cardSchemeId);
 
 }
