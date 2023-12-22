@@ -108,11 +108,8 @@ public class IssuerManagementServiceImplTest {
     void retrieveIssuer_whenIssuerExists_thenReturnIssuerDto() {
         // Given
         String cardIssuerId = "123";
-        Issuer issuer = new Issuer();
-        issuer.setCardIssuerName("IssuerName");
-        issuer.setCardIssuerId(cardIssuerId);
-        issuer.setCreatedDate(LocalDateTime.now());
-        issuer.setIssuerStatus(Status.ACTIVE);
+        String cardIssuerName = "IssuerName";
+        Issuer issuer = createIssuer(cardIssuerName, cardIssuerId);
 
         when(issuerRepository.findFirstByIsDeletedFalseAndCardIssuerIdOrderByCreatedDate(cardIssuerId))
                 .thenReturn(Optional.of(issuer));
@@ -432,6 +429,7 @@ public class IssuerManagementServiceImplTest {
         Issuer issuer = new Issuer();
         issuer.setCardIssuerName(name);
         issuer.setCardIssuerId(id);
+        issuer.setCreatedDate(LocalDateTime.now());
         issuer.setIssuerStatus(Status.ACTIVE);
         return issuer;
     }
