@@ -55,14 +55,6 @@ public class IssuerManagementServiceImpl implements IssuerService {
     }
 
 
-//    public PaginatedResponseDTO<IssuerDto> filterIssuers(AutomataSearchRequest searchRequest) {
-//        Specification<Issuer> specification = issuerSpecification.buildSpecification(searchRequest);
-//        Page<Issuer> issuerPage = issuerRepository.findAll(
-//                specification,
-//                getPageable(searchRequest.getPage(), searchRequest.getSize()));
-//
-//        return getIssuerPaginatedResponse(issuerPage);
-//    }
 
     @Override
     public CsvDto<IssuerDto> prepareIssuersCSV(CsvDto<IssuerDto> parameter) {
@@ -125,7 +117,7 @@ public class IssuerManagementServiceImpl implements IssuerService {
         Issuer issuer = new Issuer();
         issuer.setCardIssuerName(issuerRequest.getCardIssuerName());
         issuer.setCardIssuerId(issuerRequest.getCardIssuerId());
-
+        issuer.setIssuerStatus(Status.ACTIVE);
         Issuer savedIssuer = issuerRepository.save(issuer);
 
         return mapIssuerEntityToDto(savedIssuer);
@@ -232,12 +224,12 @@ public class IssuerManagementServiceImpl implements IssuerService {
         IssuerDto issuerDto = new IssuerDto();
         issuerDto.setCardIssuerName(issuer.getCardIssuerName());
         issuerDto.setCardIssuerId(issuer.getCardIssuerId());
-        issuerDto.setCreatedDate(issuer.getCreatedDate().toString());
-        if (issuer.getLastModifiedDate() != null) {
-            issuerDto.setLastModified(issuer.getLastModifiedDate().toString());
-        }
+        issuerDto.setCreatedDate(issuer.getCreatedDate() != null ? issuer.getCreatedDate().toString() : null);
+        issuerDto.setIssuerStatus(issuer.getIssuerStatus());
+        issuerDto.setLastModified(issuer.getLastModifiedDate() != null ? issuer.getLastModifiedDate().toString() : null);
         return issuerDto;
     }
+
 
 
 
