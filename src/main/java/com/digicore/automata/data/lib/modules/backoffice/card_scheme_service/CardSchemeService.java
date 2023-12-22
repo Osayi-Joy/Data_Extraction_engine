@@ -2,6 +2,7 @@ package com.digicore.automata.data.lib.modules.backoffice.card_scheme_service;
 
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardDto;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardRequest;
+import com.digicore.automata.data.lib.modules.common.dto.CsvDto;
 import com.digicore.registhentication.common.dto.response.PaginatedResponseDTO;
 import org.springframework.stereotype.Service;
 
@@ -26,4 +27,5 @@ public interface CardSchemeService {
 
     CardDto viewCardSchemeDetail(String cardSchemeId);
 
+    CsvDto<CardDto> prepareIssuersCSV(CsvDto<CardDto> parameter);
 }

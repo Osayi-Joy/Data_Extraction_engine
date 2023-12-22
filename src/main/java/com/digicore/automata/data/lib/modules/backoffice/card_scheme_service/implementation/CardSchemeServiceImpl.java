@@ -7,13 +7,19 @@ import com.digicore.automata.data.lib.modules.backoffice.card_scheme.model.CardP
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.repository.CardRepository;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.specification.CardProfileSpecification;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme_service.CardSchemeService;
+import com.digicore.automata.data.lib.modules.common.dto.CsvDto;
 import com.digicore.automata.data.lib.modules.common.settings.service.SettingService;
 import com.digicore.registhentication.common.dto.response.PaginatedResponseDTO;
 import com.digicore.registhentication.exceptions.ExceptionHandler;
 import com.digicore.registhentication.registration.enums.Status;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static com.digicore.automata.data.lib.modules.exception.messages.CardSchemeErrorMessages.*;
 
@@ -26,7 +32,7 @@ import static com.digicore.automata.data.lib.modules.exception.messages.CardSche
 public class CardSchemeServiceImpl implements CardSchemeService {
 
     private final CardRepository cardRepository;
-    private final CardProfileSpecification specification;
+    private final CardProfileSpecification cardSpecification;
     private final ExceptionHandler<String, String, HttpStatus, String> exceptionHandler;
     private final SettingService service;
 
@@ -125,6 +131,41 @@ public class CardSchemeServiceImpl implements CardSchemeService {
         return getIssuerPaginatedResponse(issuerPage);
 
     }
+
+    @Override
+    public CsvDto<CardDto> prepareIssuersCSV(CsvDto<CardDto> parameter) {
+        Specification<CardProfile> specification = cardSpecification.buildSpecification(
+                parameter.getAutomataSearchRequest());
+
+        List<CardDto> data = cardRepository.findAll(specification).stream()
+                .map(this::mapCardProfileToDto)
+                .toList();
+
+        if (data.isEmpty()) {
+            throw exceptionHandler.processCustomException("No record found", "GEN_006", HttpStatus.NOT_FOUND);
+        } else {
+            parameter.setCsvHeader(new String[]{
+                    "Card Scheme Name",
+                    "Card Scheme Id",
+                    "Card Status",
+                    "Created Date",
+                    "Last Modified"
+            });
+            parameter.getFieldMappings().put("Card Scheme Name", CardDto::getCardSchemeName);
+            parameter.getFieldMappings().put("Card Scheme Id", CardDto::getCardSchemeId);
+            parameter.getFieldMappings().put("Card Status", cardDto -> cardDto.getCardStatus().toString());
+            parameter.getFieldMappings().put("Created Date", CardDto::getDateCreated);
+            parameter.getFieldMappings().put("Last Modified", CardDto::getDateLastModified);
+            parameter.setData(data);
+
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            String fileName = "Issuers-" + DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(currentDateTime);
+            parameter.setFileName(fileName);
+
+            return parameter;
+        }
+    }
+
 
     /**
      * view card scheme detail
