@@ -1,9 +1,9 @@
 package com.digicore.automata.data.lib.modules.backoffice.card_scheme_service.implementation;
 
-import com.azure.core.http.rest.Page;
+import org.springframework.data.domain.Page;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardDto;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardRequest;
-import com.digicore.automata.data.lib.modules.backoffice.card_scheme.model.CardProfile;
+import com.digicore.automata.data.lib.modules.backoffice.card_scheme.model.CardScheme;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.repository.CardRepository;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.specification.CardProfileSpecification;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme_service.CardSchemeService;
@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static com.digicore.automata.data.lib.modules.common.util.PageableUtil.*;
 import static com.digicore.automata.data.lib.modules.exception.messages.CardSchemeErrorMessages.*;
 
 /**
@@ -52,10 +53,10 @@ public class CardSchemeServiceImpl implements CardSchemeService {
             );
         }
 
-        CardProfile cardProfile = buildNewCardProfile(cardRequest);
-        CardProfile savedCardProfile = cardRepository.save(cardProfile);
+        CardScheme cardScheme = buildNewCardProfile(cardRequest);
+        CardScheme savedCardScheme = cardRepository.save(cardScheme);
 
-        return mapCardProfileToDto(savedCardProfile);
+        return mapCardEntityToDto(savedCardScheme);
     }
 
     /**
@@ -64,7 +65,7 @@ public class CardSchemeServiceImpl implements CardSchemeService {
      */
     @Override
     public void enableCardScheme(String cardSchemeId) {
-        CardProfile singleCard = cardRepository.findByCardStatusAndCardSchemeId(Status.INACTIVE,
+        CardScheme singleCard = cardRepository.findByCardStatusAndCardSchemeId(Status.INACTIVE,
                 cardSchemeId).orElseThrow(() ->
                 exceptionHandler.processBadRequestException(
                         service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
@@ -81,7 +82,7 @@ public class CardSchemeServiceImpl implements CardSchemeService {
      */
     @Override
     public void disableCardScheme(String cardSchemeId) {
-        CardProfile singleCard = cardRepository.findByCardStatusAndCardSchemeId(Status.ACTIVE,
+        CardScheme singleCard = cardRepository.findByCardStatusAndCardSchemeId(Status.ACTIVE,
                 cardSchemeId).orElseThrow(() ->
                 exceptionHandler.processBadRequestException(
                         service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
@@ -97,7 +98,7 @@ public class CardSchemeServiceImpl implements CardSchemeService {
      */
     @Override
     public void deleteCardScheme(String cardSchemeId) {
-        CardProfile card = getCardSchemeDetail(cardSchemeId);
+        CardScheme card = getCardSchemeDetail(cardSchemeId);
         card.setDeleted(true);
         cardRepository.save(card);
     }
@@ -111,34 +112,60 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     @Override
     public CardDto updateCardScheme(String cardSchemeId, CardRequest cardRequest) {
 
-        CardProfile cardProfile = getCardSchemeDetail(cardRequest.getCardSchemeId());
+        CardScheme cardScheme = getCardSchemeDetail(cardRequest.getCardSchemeId());
 
-        cardProfile.setCardSchemeName(cardRequest.getCardSchemeName() != null ?
-                cardRequest.getCardSchemeName() : cardProfile.getCardSchemeName());
-        cardProfile.setCardSchemeId(cardRequest.getCardSchemeId() != null ?
-                cardRequest.getCardSchemeId() : cardProfile.getCardSchemeId());
+        cardScheme.setCardSchemeName(cardRequest.getCardSchemeName() != null ?
+                cardRequest.getCardSchemeName() : cardScheme.getCardSchemeName());
+        cardScheme.setCardSchemeId(cardRequest.getCardSchemeId() != null ?
+                cardRequest.getCardSchemeId() : cardScheme.getCardSchemeId());
 
-        CardProfile updatedCardProfile = cardRepository.save(cardProfile);
+        CardScheme updatedCardScheme = cardRepository.save(cardScheme);
 
-        return mapCardProfileToDto(updatedCardProfile);
+        return mapCardEntityToDto(updatedCardScheme);
 
     }
 
     @Override
     public PaginatedResponseDTO<CardDto> getAllCardSchemes(int pageNumber, int pageSize) {
 
-        Page<CardProfile> issuerPage = cardRepository.findAllByIsDeleted(false, getPageable(pageNumber, pageSize));
-        return getIssuerPaginatedResponse(issuerPage);
+        Page<CardScheme> cardScheme = cardRepository.findAllByIsDeleted(false, getPageable(pageNumber, pageSize));
+        return getCardPaginatedResponse(cardScheme);
 
     }
 
+    private PaginatedResponseDTO<CardDto> getCardPaginatedResponse(Page<CardScheme> cardScheme) {
+        return PaginatedResponseDTO.<CardDto>builder()
+                .content(cardScheme.getContent().stream().map(this::mapCardEntityToDto).toList())
+                .currentPage(cardScheme.getNumber() + 1)
+                .totalPages(cardScheme.getTotalPages())
+                .totalItems(cardScheme.getTotalElements())
+                .isFirstPage(cardScheme.isFirst())
+                .isLastPage(cardScheme.isLast())
+                .build();
+    }
+
+    /**
+     * create map card entity to card response dto
+     * @param cardScheme
+     * @return cardDto
+     */
+    private CardDto mapCardEntityToDto(CardScheme cardScheme) {
+        CardDto cardDto = new CardDto();
+        cardDto.setCardSchemeName(cardScheme.getCardSchemeName());
+        cardDto.setCardSchemeId(cardScheme.getCardSchemeId());
+        cardDto.setDateCreated(cardScheme.getCreatedDate() != null ? cardScheme.getCreatedDate().toString() : null);
+        cardDto.setCardStatus(cardScheme.getCardStatus());
+        cardDto.setDateLastModified(cardScheme.getLastModifiedDate() != null ? cardScheme.getLastModifiedDate().toString() : null);
+        return cardDto;
+    }
+
     @Override
-    public CsvDto<CardDto> prepareIssuersCSV(CsvDto<CardDto> parameter) {
-        Specification<CardProfile> specification = cardSpecification.buildSpecification(
+    public CsvDto<CardDto> prepareCardSchemeCSV(CsvDto<CardDto> parameter) {
+        Specification<CardScheme> specification = cardSpecification.buildSpecification(
                 parameter.getAutomataSearchRequest());
 
         List<CardDto> data = cardRepository.findAll(specification).stream()
-                .map(this::mapCardProfileToDto)
+                .map(this::mapCardEntityToDto)
                 .toList();
 
         if (data.isEmpty()) {
@@ -159,7 +186,7 @@ public class CardSchemeServiceImpl implements CardSchemeService {
             parameter.setData(data);
 
             LocalDateTime currentDateTime = LocalDateTime.now();
-            String fileName = "Issuers-" + DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(currentDateTime);
+            String fileName = "CardScheme-" + DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(currentDateTime);
             parameter.setFileName(fileName);
 
             return parameter;
@@ -175,7 +202,7 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     @Override
     public CardDto viewCardSchemeDetail(String cardSchemeId) {
 
-        CardProfile card = cardRepository
+        CardScheme card = cardRepository
                .findFirstByIsDeletedFalseAndCardSchemeIdOrderByCreatedDate(cardSchemeId)
                 .orElseThrow(() ->
                         exceptionHandler.processBadRequestException(
@@ -183,10 +210,10 @@ public class CardSchemeServiceImpl implements CardSchemeService {
                                 service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
                         )
                 );
-        return mapCardProfileToDto(card);
+        return mapCardEntityToDto(card);
     }
 
-    public CardProfile getCardSchemeDetail(String cardSchemeId){
+    public CardScheme getCardSchemeDetail(String cardSchemeId){
        return cardRepository
                 .findFirstByIsDeletedFalseAndCardSchemeIdOrderByCreatedDate(cardSchemeId)
                 .orElseThrow(() ->
@@ -199,29 +226,13 @@ public class CardSchemeServiceImpl implements CardSchemeService {
 
     }
 
-
-    /**
-     * create map card entity to card response dto
-     * @param savedCardProfile
-     * @return cardDto
-     */
-    private CardDto mapCardProfileToDto(CardProfile savedCardProfile) {
-        CardDto cardDto = new CardDto();
-        cardDto.setCardSchemeId(savedCardProfile.getCardSchemeId());
-        cardDto.setCardSchemeName(savedCardProfile.getCardSchemeName());
-        cardDto.setCardStatus(savedCardProfile.getCardStatus());
-        cardDto.setDateCreated(savedCardProfile.getCreatedDate());
-        cardDto.setDateLastModified(savedCardProfile.getLastModifiedDate());
-        return cardDto;
-    }
-
     /**
      * create map card request to card entity to save in the db
      * @param cardRequest
      * @return card profile
      */
-    private CardProfile buildNewCardProfile(CardRequest cardRequest) {
-        CardProfile profile = new CardProfile();
+    private CardScheme buildNewCardProfile(CardRequest cardRequest) {
+        CardScheme profile = new CardScheme();
         profile.setCardSchemeId(cardRequest.getCardSchemeId());
         profile.setCardSchemeName(profile.getCardSchemeName());
         return profile;

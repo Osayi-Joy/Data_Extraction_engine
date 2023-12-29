@@ -27,5 +27,5 @@ public interface CardSchemeService {
 
     CardDto viewCardSchemeDetail(String cardSchemeId);
 
-    CsvDto<CardDto> prepareIssuersCSV(CsvDto<CardDto> parameter);
+    CsvDto<CardDto> prepareCardSchemeCSV(CsvDto<CardDto> parameter);
 }

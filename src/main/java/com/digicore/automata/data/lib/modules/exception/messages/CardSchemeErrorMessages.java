@@ -10,14 +10,14 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CardSchemeErrorMessages {
-    public static final String CARD_NOT_FOUND_MESSAGE_KEY = "ISSUER_NOT_FOUND_MESSAGE";
+    public static final String CARD_NOT_FOUND_MESSAGE_KEY = "CARD_SCHEME_NOT_FOUND_MESSAGE";
 
-    public static final String CARD_NOT_FOUND_CODE = "IS_001";
-    public static final String CARD_NOT_FOUND_CODE_KEY = "ISSUER_NOT_FOUND_CODE";
-    public static final String CARD_ALREADY_EXISTS_MESSAGE = "Issuer with cardIssuerId already exists.";
-    public static final String CARD_ALREADY_EXISTS_MESSAGE_KEY = "ISSUER_ALREADY_EXISTS_MESSAGE";
+    public static final String CARD_NOT_FOUND_CODE = "CARD_SCHEME_001";
+    public static final String CARD_NOT_FOUND_CODE_KEY = "CARD_SCHEME_NOT_FOUND_CODE";
+    public static final String CARD_ALREADY_EXISTS_MESSAGE = "CARD_SCHEME WITH CARD_SCHEME_ID ALREADY EXISTS.";
+    public static final String CARD_ALREADY_EXISTS_MESSAGE_KEY = "CARD_SCHEME_ALREADY_EXISTS_MESSAGE";
 
-    public static final String CARD_ALREADY_EXISTS_CODE = "IS_002";
-    public static final String CARD_ALREADY_EXISTS_CODE_KEY = "ISSUER_ALREADY_EXISTS_CODE";
+    public static final String CARD_ALREADY_EXISTS_CODE = "CARD_SCHEME_002";
+    public static final String CARD_ALREADY_EXISTS_CODE_KEY = "CARD_SCHEME_ALREADY_EXISTS_CODE";
 
 }
