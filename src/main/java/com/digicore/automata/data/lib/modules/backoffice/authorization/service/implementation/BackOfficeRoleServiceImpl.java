@@ -318,7 +318,9 @@ public class BackOfficeRoleServiceImpl implements RoleService<RoleDTO, BackOffic
 
     @Override
     public void disableRole(String name) {
-        BackOfficeRole role = retrieveRole(name);
+        BackOfficeRole role = backOfficeRoleRepository.findFirstByNameAndActiveOrderByCreatedDate(name, true)
+                .orElseThrow(() -> exceptionHandler.processBadRequestException(
+                        ROLE_ALREADY_ACTIVE_MESSAGE, ROLE_ALREADY_ACTIVE_CODE));
         role.setActive(false);
         backOfficeRoleRepository.save(role);
     }
