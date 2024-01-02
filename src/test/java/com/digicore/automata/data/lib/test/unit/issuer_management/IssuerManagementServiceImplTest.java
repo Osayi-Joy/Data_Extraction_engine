@@ -149,8 +149,8 @@ public class IssuerManagementServiceImplTest {
     @Test
     void editIssuer_shouldEditIssuerSuccessfully() {
         // Given
-        IssuerRequest issuerRequest = new IssuerRequest("NewIssuerName", "ExistingIssuerId");
-
+        IssuerRequest issuerRequest = new IssuerRequest("EditedIssuerName", "EditedIssuerId");
+        String cardIssuerId = "ExistingIssuerId";
         Issuer existingIssuer = new Issuer();
         existingIssuer.setCardIssuerName("ExistingIssuerName");
         existingIssuer.setCardIssuerId("ExistingIssuerId");
@@ -160,17 +160,18 @@ public class IssuerManagementServiceImplTest {
 
         when(issuerRepository.save(any(Issuer.class))).thenAnswer(invocation -> {
             Issuer savedIssuer = invocation.getArgument(0);
-            savedIssuer.setCardIssuerName("NewIssuerName");
+            savedIssuer.setCardIssuerName("EditedIssuerName");
+            savedIssuer.setCardIssuerId("EditedIssuerId");
             return savedIssuer;
         });
 
         // When
-        IssuerDto editedIssuerDto = issuerService.editIssuer(issuerRequest);
+        IssuerDto editedIssuerDto = issuerService.editIssuer(cardIssuerId, issuerRequest);
 
         // Then
         assertNotNull(editedIssuerDto);
-        assertEquals("NewIssuerName", editedIssuerDto.getCardIssuerName());
-        assertEquals("ExistingIssuerId", editedIssuerDto.getCardIssuerId());
+        assertEquals("EditedIssuerName", editedIssuerDto.getCardIssuerName());
+        assertEquals("EditedIssuerId", editedIssuerDto.getCardIssuerId());
     }
 
     @Test

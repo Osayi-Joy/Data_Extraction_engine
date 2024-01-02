@@ -23,7 +23,7 @@ public interface IssuerService {
 
     IssuerDto createIssuer(IssuerRequest issuerRequest);
 
-    IssuerDto editIssuer(IssuerRequest issuerRequest);
+    IssuerDto editIssuer(String cardIssuerId, IssuerRequest issuerRequest);
 
     void enableIssuer(String cardIssuerId);
 

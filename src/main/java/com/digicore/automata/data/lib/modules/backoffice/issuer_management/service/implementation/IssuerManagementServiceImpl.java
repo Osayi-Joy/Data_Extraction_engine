@@ -125,8 +125,8 @@ public class IssuerManagementServiceImpl implements IssuerService {
 
 
     @Override
-    public IssuerDto editIssuer(IssuerRequest issuerRequest) {
-        Issuer existingIssuer = getIssuer(issuerRequest.getCardIssuerId());
+    public IssuerDto editIssuer(String cardIssuerId, IssuerRequest issuerRequest) {
+        Issuer existingIssuer = getIssuer(cardIssuerId);
         existingIssuer.setCardIssuerName(issuerRequest.getCardIssuerName() != null ?
                 issuerRequest.getCardIssuerName() : existingIssuer.getCardIssuerName());
         existingIssuer.setCardIssuerId(issuerRequest.getCardIssuerId() != null ?
