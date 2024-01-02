@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -34,9 +35,64 @@ public class SystemUtil {
         return new SystemIDGeneratorResult(String.valueOf(counter), generatedId);
     }
 
+    public static Set<String> makerPermissions = Set.of("view-dashboard",
+            "view-self-user-details",
+            "view-backoffice-users",
+            "view-backoffice-user-details",
+            "export-backoffice-users",
+            "invite-backoffice-user",
+            "resend-invite-email",
+            "edit-backoffice-user-details",
+            "delete-backoffice-profile",
+            "enable-backoffice-profile",
+            "disable-backoffice-profile",
+            "create-roles",
+            "view-permissions",
+            "view-roles",
+            "delete-role",
+            "edit-role",
+            "disable-role",
+            "enable-role",
+            "view-role-details",
+            "view-self-audit-trails",
+            "view-all-audit-trails",
+            "create-issuer",
+            "view-issuers",
+            "delete-issuer",
+            "edit-issuer",
+            "disable-issuer",
+            "enable-issuer",
+            "view-issuer-details");
 
+    public static Set<String> checkerPermissions =Set.of("treat-requests",
+            "view-dashboard",
+            "view-self-user-details",
+            "view-backoffice-users",
+            "view-backoffice-user-details",
+            "export-backoffice-users",
+            "approve-invite-backoffice-user",
+            "approve-edit-backoffice-user-details",
+            "approve-delete-backoffice-profile",
+            "approve-enable-backoffice-profile",
+            "approve-disable-backoffice-profile",
+            "approve-create-roles",
+            "view-permissions",
+            "view-roles",
+            "approve-delete-role",
+            "approve-edit-role",
+            "approve-disable-role",
+            "approve-enable-role",
+            "view-role-details",
+            "view-self-audit-trails",
+            "view-all-audit-trails",
+            "approve-create-issuer",
+            "view-issuers",
+            "approve-delete-issuer",
+            "approve-edit-issuer",
+            "approve-disable-issuer",
+            "approve-enable-issuer",
+            "view-issuer-details");
 
-   
     public synchronized void saveLastCounterValue(String prefix, String counter) {
         SettingDTO settingDTO = new SettingDTO();
         settingDTO.setKey(prefix.concat(COUNTER));
