@@ -1,5 +1,6 @@
 package com.digicore.automata.data.lib.modules.backoffice.issuer_management.service;
 
+import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.EditIssuerRequest;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerDto;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerRequest;
 import com.digicore.automata.data.lib.modules.common.dto.CsvDto;
@@ -23,7 +24,7 @@ public interface IssuerService {
 
     IssuerDto createIssuer(IssuerRequest issuerRequest);
 
-    IssuerDto editIssuer(String cardIssuerId, IssuerRequest issuerRequest);
+    IssuerDto editIssuer(EditIssuerRequest issuerRequest);
 
     void enableIssuer(String cardIssuerId);
 

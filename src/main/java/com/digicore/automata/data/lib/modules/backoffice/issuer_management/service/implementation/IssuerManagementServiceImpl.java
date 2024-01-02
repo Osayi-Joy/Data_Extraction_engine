@@ -1,5 +1,6 @@
 package com.digicore.automata.data.lib.modules.backoffice.issuer_management.service.implementation;
 
+import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.EditIssuerRequest;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerDto;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerRequest;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.model.Issuer;
@@ -125,12 +126,12 @@ public class IssuerManagementServiceImpl implements IssuerService {
 
 
     @Override
-    public IssuerDto editIssuer(String cardIssuerId, IssuerRequest issuerRequest) {
-        Issuer existingIssuer = getIssuer(cardIssuerId);
-        existingIssuer.setCardIssuerName(issuerRequest.getCardIssuerName() != null ?
-                issuerRequest.getCardIssuerName() : existingIssuer.getCardIssuerName());
-        existingIssuer.setCardIssuerId(issuerRequest.getCardIssuerId() != null ?
-                issuerRequest.getCardIssuerId() : existingIssuer.getCardIssuerId());
+    public IssuerDto editIssuer(EditIssuerRequest issuerRequest) {
+        Issuer existingIssuer = getIssuer(issuerRequest.getExistingIssuerId());
+        existingIssuer.setCardIssuerName(issuerRequest.getNewIssuerName() != null ?
+                issuerRequest.getNewIssuerName() : existingIssuer.getCardIssuerName());
+        existingIssuer.setCardIssuerId(issuerRequest.getNewIssuerId() != null ?
+                issuerRequest.getNewIssuerId() : existingIssuer.getCardIssuerId());
 
         Issuer updatedIssuer = issuerRepository.save(existingIssuer);
 

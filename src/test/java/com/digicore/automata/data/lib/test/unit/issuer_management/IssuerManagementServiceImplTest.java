@@ -2,6 +2,7 @@ package com.digicore.automata.data.lib.test.unit.issuer_management;
 
 import com.digicore.api.helper.exception.ZeusRuntimeException;
 import com.digicore.api.helper.response.ApiError;
+import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.EditIssuerRequest;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerDto;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerRequest;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.repository.IssuerRepository;
@@ -149,7 +150,7 @@ public class IssuerManagementServiceImplTest {
     @Test
     void editIssuer_shouldEditIssuerSuccessfully() {
         // Given
-        IssuerRequest issuerRequest = new IssuerRequest("EditedIssuerName", "EditedIssuerId");
+        EditIssuerRequest issuerRequest = new EditIssuerRequest("ExistingIssuerId","EditedIssuerName", "EditedIssuerId");
         String cardIssuerId = "ExistingIssuerId";
         Issuer existingIssuer = new Issuer();
         existingIssuer.setCardIssuerName("ExistingIssuerName");
@@ -166,7 +167,7 @@ public class IssuerManagementServiceImplTest {
         });
 
         // When
-        IssuerDto editedIssuerDto = issuerService.editIssuer(cardIssuerId, issuerRequest);
+        IssuerDto editedIssuerDto = issuerService.editIssuer(issuerRequest);
 
         // Then
         assertNotNull(editedIssuerDto);
