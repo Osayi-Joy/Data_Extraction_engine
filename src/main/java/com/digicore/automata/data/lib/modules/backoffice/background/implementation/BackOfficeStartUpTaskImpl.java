@@ -1,5 +1,6 @@
 package com.digicore.automata.data.lib.modules.backoffice.background.implementation;
 
+import com.digicore.automata.data.lib.modules.backoffice.authentication.service.implementation.BackOfficeUserAuthServiceImpl;
 import com.digicore.automata.data.lib.modules.backoffice.authorization.model.BackOfficePermission;
 import com.digicore.automata.data.lib.modules.backoffice.authorization.model.BackOfficeRole;
 import com.digicore.automata.data.lib.modules.backoffice.registration.services.implementation.BackOfficeUserRegistrationServiceImpl;
@@ -15,12 +16,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,11 +41,18 @@ public class BackOfficeStartUpTaskImpl implements BackGroundService {
   private final RoleService<RoleDTO, BackOfficeRole> backOfficeRoleServiceImpl;
   private final PermissionService<PermissionDTO, BackOfficePermission> backOfficePermissionServiceImpl;
   private final BackOfficeUserRegistrationServiceImpl backOfficeUserRegistrationService;
+  private final BackOfficeUserAuthServiceImpl backOfficeUserAuthServiceImpl;
 
   @Override
   @EventListener(ContextRefreshedEvent.class)
   public void runSystemStartUpTask() {
     updateSystemPermissions();
+  }
+  @Override
+  @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
+  public void disableInactiveAccounts() {
+    LocalDate thresholdDate = LocalDate.now().minusDays(propertyConfig.getInactivityDays());
+    backOfficeUserAuthServiceImpl.disableInactiveAccounts(thresholdDate);
   }
 
   private void updateSystemPermissions() {

@@ -74,7 +74,7 @@ public class BackOfficeUserProfileServiceImpl
         profileDto.setLastName(backOfficeUserAuthProfile.getBackOfficeUserProfile().getLastName());
         profileDto.setStatus(backOfficeUserAuthProfile.getStatus());
         profileDto.setAssignedRole(backOfficeUserAuthProfile.getAssignedRole());
-
+        profileDto.setLastLoginDate(backOfficeUserAuthProfile.getLastLoginDate());
         BackOfficePasswordHistory latestPasswordHistory = backOfficeUserAuthProfile.getBackOfficePasswordHistories()
                 .stream()
                 .max(Comparator.comparing(BackOfficePasswordHistory::getLastModifiedDate))
@@ -221,6 +221,7 @@ public class BackOfficeUserProfileServiceImpl
         profileDto.setUsername(backOfficeUserProfile.getEmail());
         profileDto.setAssignedRole(profileProjection.getAssignedRole());
         profileDto.setStatus(profileProjection.getStatus());
+
         profileDto.setPassword(null);
         profileDto.setPin(null);
         profileDto.setPhoneNumber(
@@ -241,6 +242,7 @@ public class BackOfficeUserProfileServiceImpl
         profileDto.setStatus(userAuthProfileDTO.getStatus());
         profileDto.setPassword(null);
         profileDto.setUserPermissions(userAuthProfileDTO.getPermissions());
+        profileDto.setLastLoginDate(userAuthProfileDTO.getLastLoginDate());
         profileDto.setPin(null);
         profileDto.setPhoneNumber(
                 StringUtils.isBlank(backOfficeUserProfile.getPhoneNumber())
