@@ -30,8 +30,6 @@ public interface IssuerService {
 
     void disableIssuer(String cardIssuerId);
 
-    void deleteIssuer(String cardIssuerId);
-
     void issuerExistenceCheck(String cardIssuerId);
 
     void issuerNotFoundCheck(String cardIssuerId);

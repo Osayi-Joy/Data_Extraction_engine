@@ -174,13 +174,6 @@ public class IssuerManagementServiceImpl implements IssuerService {
     }
 
     @Override
-    public void deleteIssuer(String cardIssuerId) {
-        Issuer issuer = getIssuer(cardIssuerId);
-        issuer.setDeleted(true);
-        issuerRepository.save(issuer);
-    }
-
-    @Override
     public void issuerExistenceCheck(String cardIssuerId){
         if (issuerRepository.existsByCardIssuerId(cardIssuerId)) {
             throw exceptionHandler.processCustomException(
