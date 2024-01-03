@@ -1,12 +1,15 @@
-package com.digicore.automata.data.lib.modules.backoffice.card_scheme_service.implementation;
+package com.digicore.automata.data.lib.modules.backoffice.card_scheme.service.implementation;
 
+import com.digicore.automata.data.lib.modules.backoffice.card_scheme.specification.CardSchemeSpecification;
+import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerDto;
+import com.digicore.automata.data.lib.modules.backoffice.issuer_management.model.Issuer;
+import com.digicore.automata.data.lib.modules.common.util.AutomataSearchRequest;
 import org.springframework.data.domain.Page;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardDto;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardRequest;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.model.CardScheme;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.repository.CardRepository;
-import com.digicore.automata.data.lib.modules.backoffice.card_scheme.specification.CardProfileSpecification;
-import com.digicore.automata.data.lib.modules.backoffice.card_scheme_service.CardSchemeService;
+import com.digicore.automata.data.lib.modules.backoffice.card_scheme.service.CardSchemeService;
 import com.digicore.automata.data.lib.modules.common.dto.CsvDto;
 import com.digicore.automata.data.lib.modules.common.settings.service.SettingService;
 import com.digicore.registhentication.common.dto.response.PaginatedResponseDTO;
@@ -23,6 +26,8 @@ import java.util.List;
 
 import static com.digicore.automata.data.lib.modules.common.util.PageableUtil.*;
 import static com.digicore.automata.data.lib.modules.exception.messages.CardSchemeErrorMessages.*;
+import static com.digicore.automata.data.lib.modules.exception.messages.IssuerErrorMessages.*;
+import static com.digicore.automata.data.lib.modules.exception.messages.IssuerErrorMessages.ISSUER_ALREADY_EXISTS_CODE_KEY;
 
 /**
  * @author peaceobute
@@ -33,7 +38,7 @@ import static com.digicore.automata.data.lib.modules.exception.messages.CardSche
 public class CardSchemeServiceImpl implements CardSchemeService {
 
     private final CardRepository cardRepository;
-    private final CardProfileSpecification cardSpecification;
+    private final CardSchemeSpecification cardSpecification;
     private final ExceptionHandler<String, String, HttpStatus, String> exceptionHandler;
     private final SettingService service;
 
@@ -236,5 +241,58 @@ public class CardSchemeServiceImpl implements CardSchemeService {
         profile.setCardSchemeId(cardRequest.getCardSchemeId());
         profile.setCardSchemeName(profile.getCardSchemeName());
         return profile;
+    }
+
+    @Override
+    public PaginatedResponseDTO<CardDto> searchOrFilterIssuers(AutomataSearchRequest automataSearchRequest) {
+        Specification<CardScheme> specification = cardSpecification.buildSpecification(automataSearchRequest);
+        Page<CardScheme> cardPage = cardRepository.findAll(
+                specification,
+                getPageable(automataSearchRequest.getPage(), automataSearchRequest.getSize()));
+
+        return getCardPaginatedResponse(cardPage);
+    }
+
+    @Override
+    public CardDto retrieveCardScheme(String cardSchemeId) {
+        CardScheme cardScheme = cardRepository
+                .findFirstByIsDeletedFalseAndCardSchemeIdOrderByCreatedDate(cardSchemeId)
+                .orElseThrow(() ->
+                        exceptionHandler.processBadRequestException(
+                                service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                                service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                        )
+                );
+        return mapCardEntityToDto(cardScheme);
+    }
+
+    @Override
+    public void cardSchemeExistenceCheck(String cardSchemeId){
+        if (cardRepository.existsByCardSchemeId(cardSchemeId)) {
+            throw exceptionHandler.processCustomException(
+                    service.retrieveValue(CARD_ALREADY_EXISTS_MESSAGE_KEY),
+                    service.retrieveValue(CARD_ALREADY_EXISTS_CODE_KEY),
+                    HttpStatus.CONFLICT
+            );
+        }
+    }
+    @Override
+    public void cardSchemeNotFoundCheck(String cardSchemeId){
+        if (!cardRepository.existsByCardSchemeId(cardSchemeId)) {
+            throw exceptionHandler.processCustomException(
+                    service.retrieveValue(ISSUER_NOT_FOUND_MESSAGE_KEY),
+                    service.retrieveValue(ISSUER_NOT_FOUND_CODE_KEY),
+                    HttpStatus.CONFLICT
+            );
+        }
+    }
+    @Override
+    public void existByStatusAndCardSchemeId(Status cardStatus, String cardSchemeId){
+        if(!cardRepository.existsByIssuerStatusAndCardIssuerId(cardStatus,
+                cardSchemeId)) {
+            throw exceptionHandler.processBadRequestException(
+                    service.retrieveValue(ISSUER_NOT_FOUND_MESSAGE_KEY),
+                    service.retrieveValue(ISSUER_NOT_FOUND_CODE_KEY));
+        }
     }
 }
