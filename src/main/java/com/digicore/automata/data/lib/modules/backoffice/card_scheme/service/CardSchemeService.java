@@ -24,7 +24,7 @@ public interface CardSchemeService {
 
     void deleteCardScheme(String cardSchemeId);
 
-    CardDto updateCardScheme(String cardSchemeId, CardRequest cardRequest);
+    CardDto updateCardScheme(CardRequest cardRequest);
 
     PaginatedResponseDTO<CardDto> getAllCardSchemes(int pageNumber, int pageSize);
 
@@ -32,7 +32,7 @@ public interface CardSchemeService {
 
     CsvDto<CardDto> prepareCardSchemeCSV(CsvDto<CardDto> parameter);
 
-    PaginatedResponseDTO<CardDto> searchOrFilterIssuers(AutomataSearchRequest automataSearchRequest);
+    PaginatedResponseDTO<CardDto> searchOrFilterCardScheme(AutomataSearchRequest automataSearchRequest);
 
     CardDto retrieveCardScheme(String cardSchemeId);
 
@@ -40,5 +40,5 @@ public interface CardSchemeService {
 
     void cardSchemeNotFoundCheck(String cardSchemeId);
 
-    void existByStatusAndCardSchemeId(Status issuerStatus, String cardSchemeId);
+    void existByStatusAndCardSchemeId(Status cardStatus, String cardSchemeId);
 }

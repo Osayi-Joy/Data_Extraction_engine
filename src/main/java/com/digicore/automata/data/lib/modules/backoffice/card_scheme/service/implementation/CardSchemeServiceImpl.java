@@ -111,11 +111,11 @@ public class CardSchemeServiceImpl implements CardSchemeService {
 
     /**
      * update card scheme
-     * @param cardSchemeId, cardRequest
+     * @param cardRequest
      * @return cardDto
      */
     @Override
-    public CardDto updateCardScheme(String cardSchemeId, CardRequest cardRequest) {
+    public CardDto updateCardScheme(CardRequest cardRequest) {
 
         CardScheme cardScheme = getCardSchemeDetail(cardRequest.getCardSchemeId());
 
@@ -244,7 +244,7 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     }
 
     @Override
-    public PaginatedResponseDTO<CardDto> searchOrFilterIssuers(AutomataSearchRequest automataSearchRequest) {
+    public PaginatedResponseDTO<CardDto> searchOrFilterCardScheme(AutomataSearchRequest automataSearchRequest) {
         Specification<CardScheme> specification = cardSpecification.buildSpecification(automataSearchRequest);
         Page<CardScheme> cardPage = cardRepository.findAll(
                 specification,
