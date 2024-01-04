@@ -108,14 +108,13 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
  }
 
 
+
  public void disableInactiveAccounts(LocalDate thresholdDate) {
   List<BackOfficeUserAuthProfile> inactiveUsers = backOfficeUserAuthProfileRepository
           .findByLastLoginDateBeforeAndStatus(thresholdDate.atStartOfDay(), Status.ACTIVE);
 
-  for (BackOfficeUserAuthProfile user : inactiveUsers) {
-   user.setStatus(Status.INACTIVE);
-   backOfficeUserAuthProfileRepository.save(user);
-  }
+  inactiveUsers.forEach(user -> user.setStatus(Status.INACTIVE));
+  backOfficeUserAuthProfileRepository.saveAll(inactiveUsers);
  }
 
 
