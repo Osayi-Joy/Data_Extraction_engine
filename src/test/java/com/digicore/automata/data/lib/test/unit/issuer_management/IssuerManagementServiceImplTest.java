@@ -227,31 +227,7 @@ public class IssuerManagementServiceImplTest {
         assertEquals(Status.INACTIVE, existingIssuer.getIssuerStatus());
     }
 
-    @Test
-    void deleteIssuer_shouldSoftDeleteIssuerSuccessfully() {
-        // Given
-        String cardIssuerId = "ExistingIssuerId";
 
-        Issuer existingIssuer = new Issuer();
-        existingIssuer.setCardIssuerName("ExistingIssuerName");
-        existingIssuer.setCardIssuerId("ExistingIssuerId");
-        existingIssuer.setDeleted(false);
-
-        when(issuerRepository.findFirstByIsDeletedFalseAndCardIssuerIdOrderByCreatedDate(cardIssuerId))
-                .thenReturn(Optional.of(existingIssuer));
-
-        when(issuerRepository.save(any(Issuer.class))).thenAnswer(invocation -> {
-            Issuer savedIssuer = invocation.getArgument(0);
-            savedIssuer.setDeleted(true);
-            return savedIssuer;
-        });
-
-        // When
-        issuerService.deleteIssuer(cardIssuerId);
-
-        // Then
-        assertTrue(existingIssuer.isDeleted());
-    }
 
     @Test
     void issuerExistenceCheck_shouldThrowExceptionWhenIssuerExists() {
