@@ -1,5 +1,7 @@
 package com.digicore.automata.data.lib.modules.exception.messages;
 
+import com.digicore.automata.data.lib.modules.common.util.services.SystemUtil;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,4 +22,12 @@ public class IssuerErrorMessages {
 
     public static final String ISSUER_ALREADY_EXISTS_CODE = "IS_002";
     public static final String ISSUER_ALREADY_EXISTS_CODE_KEY = "ISSUER_ALREADY_EXISTS_CODE";
+
+    private final SystemUtil systemUtil;
+
+
+    @PostConstruct
+    public void loadStaticFieldsIntoDB() {
+        systemUtil.loadStaticFieldsIntoDB(IssuerErrorMessages.class,"ISSUER_ERROR_MESSAGE");
+    }
 }

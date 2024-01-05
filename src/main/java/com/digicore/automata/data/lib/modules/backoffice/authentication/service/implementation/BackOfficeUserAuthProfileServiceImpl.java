@@ -74,6 +74,7 @@ public class BackOfficeUserAuthProfileServiceImpl implements AuthProfileService<
     userProfileDTO.setPassword(null);
     userProfileDTO.setPin(null);
     backOfficeUserAuthProfileDTO.setUserProfile(userProfileDTO);
+    userProfileDTO.setLastLoginDate(backOfficeUserAuthProfile.getLastLoginDate());
     return backOfficeUserAuthProfileDTO;
   }
 

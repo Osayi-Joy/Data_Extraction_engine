@@ -28,8 +28,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static com.digicore.automata.data.lib.modules.exception.messages.BackOfficeProfileErrorMessage.BACKOFFICE_PROFILE_DISABLED_CODE_KEY;
@@ -106,6 +108,14 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
  }
 
 
+
+ public void disableInactiveAccounts(LocalDate thresholdDate) {
+  List<BackOfficeUserAuthProfile> inactiveUsers = backOfficeUserAuthProfileRepository
+          .findByLastLoginDateBeforeAndStatus(thresholdDate.atStartOfDay(), Status.ACTIVE);
+
+  inactiveUsers.forEach(user -> user.setStatus(Status.INACTIVE));
+  backOfficeUserAuthProfileRepository.saveAll(inactiveUsers);
+ }
 
 
 
