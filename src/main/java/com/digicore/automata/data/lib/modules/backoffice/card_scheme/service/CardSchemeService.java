@@ -22,8 +22,6 @@ public interface CardSchemeService {
 
     void disableCardScheme(String cardSchemeId);
 
-    void deleteCardScheme(String cardSchemeId);
-
     CardDto updateCardScheme(CardRequest cardRequest);
 
     PaginatedResponseDTO<CardDto> getAllCardSchemes(int pageNumber, int pageSize);

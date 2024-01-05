@@ -1,9 +1,8 @@
 package com.digicore.automata.data.lib.modules.backoffice.card_scheme.service.implementation;
 
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.specification.CardSchemeSpecification;
-import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerDto;
-import com.digicore.automata.data.lib.modules.backoffice.issuer_management.model.Issuer;
 import com.digicore.automata.data.lib.modules.common.util.AutomataSearchRequest;
+import com.digicore.common.util.BeanUtilWrapper;
 import org.springframework.data.domain.Page;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardDto;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardRequest;
@@ -27,7 +26,6 @@ import java.util.List;
 import static com.digicore.automata.data.lib.modules.common.util.PageableUtil.*;
 import static com.digicore.automata.data.lib.modules.exception.messages.CardSchemeErrorMessages.*;
 import static com.digicore.automata.data.lib.modules.exception.messages.IssuerErrorMessages.*;
-import static com.digicore.automata.data.lib.modules.exception.messages.IssuerErrorMessages.ISSUER_ALREADY_EXISTS_CODE_KEY;
 
 /**
  * @author peaceobute
@@ -40,7 +38,7 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     private final CardRepository cardRepository;
     private final CardSchemeSpecification cardSpecification;
     private final ExceptionHandler<String, String, HttpStatus, String> exceptionHandler;
-    private final SettingService service;
+    private final SettingService settingService;
 
 
     /**
@@ -52,8 +50,8 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     public CardDto createCardScheme(CardRequest cardRequest) {
         if (cardRepository.existsByCardSchemeId(cardRequest.getCardSchemeId())) {
             throw exceptionHandler.processCustomException(
-                    service.retrieveValue(CARD_ALREADY_EXISTS_MESSAGE_KEY),
-                    service.retrieveValue(CARD_ALREADY_EXISTS_CODE_KEY),
+                    settingService.retrieveValue(CARD_ALREADY_EXISTS_MESSAGE_KEY),
+                    settingService.retrieveValue(CARD_ALREADY_EXISTS_CODE_KEY),
                     HttpStatus.CONFLICT
             );
         }
@@ -70,11 +68,11 @@ public class CardSchemeServiceImpl implements CardSchemeService {
      */
     @Override
     public void enableCardScheme(String cardSchemeId) {
-        CardScheme singleCard = cardRepository.findByCardStatusAndCardSchemeId(Status.INACTIVE,
+        CardScheme singleCard = cardRepository.findFirstByCardStatusAndCardSchemeIdOrderByCreatedDate(Status.INACTIVE,
                 cardSchemeId).orElseThrow(() ->
                 exceptionHandler.processBadRequestException(
-                        service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
-                        service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                        settingService.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                        settingService.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
                 ));
         singleCard.setCardStatus(Status.ACTIVE);
         cardRepository.save(singleCard);
@@ -87,28 +85,15 @@ public class CardSchemeServiceImpl implements CardSchemeService {
      */
     @Override
     public void disableCardScheme(String cardSchemeId) {
-        CardScheme singleCard = cardRepository.findByCardStatusAndCardSchemeId(Status.ACTIVE,
+        CardScheme singleCard = cardRepository.findFirstByCardStatusAndCardSchemeIdOrderByCreatedDate(Status.ACTIVE,
                 cardSchemeId).orElseThrow(() ->
                 exceptionHandler.processBadRequestException(
-                        service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
-                        service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                        settingService.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                        settingService.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
                 ));
         singleCard.setCardStatus(Status.INACTIVE);
         cardRepository.save(singleCard);
     }
-
-    /**
-     * delete card scheme detail
-     *
-     */
-    @Override
-    public void deleteCardScheme(String cardSchemeId) {
-        CardScheme card = getCardSchemeDetail(cardSchemeId);
-        card.setDeleted(true);
-        cardRepository.save(card);
-    }
-
-
     /**
      * update card scheme
      * @param cardRequest
@@ -211,8 +196,8 @@ public class CardSchemeServiceImpl implements CardSchemeService {
                .findFirstByIsDeletedFalseAndCardSchemeIdOrderByCreatedDate(cardSchemeId)
                 .orElseThrow(() ->
                         exceptionHandler.processBadRequestException(
-                                service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
-                                service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                                settingService.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                                settingService.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
                         )
                 );
         return mapCardEntityToDto(card);
@@ -223,8 +208,8 @@ public class CardSchemeServiceImpl implements CardSchemeService {
                 .findFirstByIsDeletedFalseAndCardSchemeIdOrderByCreatedDate(cardSchemeId)
                 .orElseThrow(() ->
                         exceptionHandler.processBadRequestException(
-                                service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
-                                service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                                settingService.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                                settingService.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
                         )
                 );
 
@@ -239,7 +224,8 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     private CardScheme buildNewCardProfile(CardRequest cardRequest) {
         CardScheme profile = new CardScheme();
         profile.setCardSchemeId(cardRequest.getCardSchemeId());
-        profile.setCardSchemeName(profile.getCardSchemeName());
+        profile.setCardSchemeName(cardRequest.getCardSchemeName());
+        profile.setCardStatus(Status.ACTIVE);
         return profile;
     }
 
@@ -259,8 +245,8 @@ public class CardSchemeServiceImpl implements CardSchemeService {
                 .findFirstByIsDeletedFalseAndCardSchemeIdOrderByCreatedDate(cardSchemeId)
                 .orElseThrow(() ->
                         exceptionHandler.processBadRequestException(
-                                service.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
-                                service.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                                settingService.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                                settingService.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
                         )
                 );
         return mapCardEntityToDto(cardScheme);
@@ -270,8 +256,8 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     public void cardSchemeExistenceCheck(String cardSchemeId){
         if (cardRepository.existsByCardSchemeId(cardSchemeId)) {
             throw exceptionHandler.processCustomException(
-                    service.retrieveValue(CARD_ALREADY_EXISTS_MESSAGE_KEY),
-                    service.retrieveValue(CARD_ALREADY_EXISTS_CODE_KEY),
+                    settingService.retrieveValue(CARD_ALREADY_EXISTS_MESSAGE_KEY),
+                    settingService.retrieveValue(CARD_ALREADY_EXISTS_CODE_KEY),
                     HttpStatus.CONFLICT
             );
         }
@@ -280,19 +266,19 @@ public class CardSchemeServiceImpl implements CardSchemeService {
     public void cardSchemeNotFoundCheck(String cardSchemeId){
         if (!cardRepository.existsByCardSchemeId(cardSchemeId)) {
             throw exceptionHandler.processCustomException(
-                    service.retrieveValue(ISSUER_NOT_FOUND_MESSAGE_KEY),
-                    service.retrieveValue(ISSUER_NOT_FOUND_CODE_KEY),
+                    settingService.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                    settingService.retrieveValue(CARD_NOT_FOUND_CODE_KEY),
                     HttpStatus.CONFLICT
             );
         }
     }
     @Override
     public void existByStatusAndCardSchemeId(Status cardStatus, String cardSchemeId){
-        if(!cardRepository.existsByIssuerStatusAndCardIssuerId(cardStatus,
+        if(!cardRepository.existsByCardStatusAndCardSchemeId(cardStatus,
                 cardSchemeId)) {
             throw exceptionHandler.processBadRequestException(
-                    service.retrieveValue(ISSUER_NOT_FOUND_MESSAGE_KEY),
-                    service.retrieveValue(ISSUER_NOT_FOUND_CODE_KEY));
+                    settingService.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                    settingService.retrieveValue(CARD_NOT_FOUND_CODE_KEY));
         }
     }
 }
