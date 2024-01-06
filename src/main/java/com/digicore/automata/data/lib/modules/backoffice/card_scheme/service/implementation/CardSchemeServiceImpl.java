@@ -104,14 +104,10 @@ public class CardSchemeServiceImpl implements CardSchemeService {
 
         CardScheme cardScheme = getCardSchemeDetail(cardRequest.getCardSchemeId());
 
-        cardScheme.setCardSchemeName(cardRequest.getCardSchemeName() != null ?
-                cardRequest.getCardSchemeName() : cardScheme.getCardSchemeName());
-        cardScheme.setCardSchemeId(cardRequest.getCardSchemeId() != null ?
-                cardRequest.getCardSchemeId() : cardScheme.getCardSchemeId());
+        BeanUtilWrapper.copyNonNullProperties(cardRequest,cardScheme);
+        cardRepository.save(cardScheme);
 
-        CardScheme updatedCardScheme = cardRepository.save(cardScheme);
-
-        return mapCardEntityToDto(updatedCardScheme);
+        return mapCardEntityToDto(cardScheme);
 
     }
 
@@ -141,11 +137,7 @@ public class CardSchemeServiceImpl implements CardSchemeService {
      */
     private CardDto mapCardEntityToDto(CardScheme cardScheme) {
         CardDto cardDto = new CardDto();
-        cardDto.setCardSchemeName(cardScheme.getCardSchemeName());
-        cardDto.setCardSchemeId(cardScheme.getCardSchemeId());
-        cardDto.setDateCreated(cardScheme.getCreatedDate() != null ? cardScheme.getCreatedDate().toString() : null);
-        cardDto.setCardStatus(cardScheme.getCardStatus());
-        cardDto.setDateLastModified(cardScheme.getLastModifiedDate() != null ? cardScheme.getLastModifiedDate().toString() : null);
+        BeanUtilWrapper.copyNonNullProperties(cardScheme,cardDto);
         return cardDto;
     }
 
@@ -171,8 +163,8 @@ public class CardSchemeServiceImpl implements CardSchemeService {
             parameter.getFieldMappings().put("Card Scheme Name", CardDto::getCardSchemeName);
             parameter.getFieldMappings().put("Card Scheme Id", CardDto::getCardSchemeId);
             parameter.getFieldMappings().put("Card Status", cardDto -> cardDto.getCardStatus().toString());
-            parameter.getFieldMappings().put("Created Date", CardDto::getDateCreated);
-            parameter.getFieldMappings().put("Last Modified", CardDto::getDateLastModified);
+            parameter.getFieldMappings().put("Created Date", cardDto->cardDto.getCreatedDate().toString());
+            parameter.getFieldMappings().put("Last Modified", cardDto->cardDto.getLastModifiedDate().toString());
             parameter.setData(data);
 
             LocalDateTime currentDateTime = LocalDateTime.now();
