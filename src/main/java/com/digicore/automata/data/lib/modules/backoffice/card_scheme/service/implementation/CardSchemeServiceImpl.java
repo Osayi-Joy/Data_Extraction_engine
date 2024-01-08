@@ -273,4 +273,16 @@ public class CardSchemeServiceImpl implements CardSchemeService {
                     settingService.retrieveValue(CARD_NOT_FOUND_CODE_KEY));
         }
     }
+
+    @Override
+    public CardScheme getCardSchemeByCardSchemeId(String cardSchemeId) {
+        return cardRepository
+                .findFirstByIsDeletedFalseAndCardSchemeIdOrderByCreatedDate(cardSchemeId)
+                .orElseThrow(() ->
+                        exceptionHandler.processBadRequestException(
+                                settingService.retrieveValue(CARD_NOT_FOUND_MESSAGE_KEY),
+                                settingService.retrieveValue(CARD_NOT_FOUND_CODE_KEY)
+                        )
+                );
+    }
 }

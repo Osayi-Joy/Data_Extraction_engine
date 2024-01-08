@@ -3,6 +3,7 @@ package com.digicore.automata.data.lib.modules.backoffice.issuer_management.serv
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.EditIssuerRequest;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerDto;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerRequest;
+import com.digicore.automata.data.lib.modules.backoffice.issuer_management.model.Issuer;
 import com.digicore.automata.data.lib.modules.common.dto.CsvDto;
 import com.digicore.automata.data.lib.modules.common.util.AutomataSearchRequest;
 import com.digicore.registhentication.common.dto.response.PaginatedResponseDTO;
@@ -30,9 +31,10 @@ public interface IssuerService {
 
     void disableIssuer(String cardIssuerId);
 
-    void issuerExistenceCheck(String cardIssuerId);
+    void issuerExistenceCheck(String cardIssuerId, String cardIssuerName);
 
     void issuerNotFoundCheck(String cardIssuerId);
 
     void existByStatusAndCardIssuerId(Status issuerStatus, String cardIssuerId);
+    Issuer getIssuerByIssuerId(String cardIssuerId);
 }

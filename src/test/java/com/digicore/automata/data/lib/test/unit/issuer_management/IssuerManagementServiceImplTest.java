@@ -67,7 +67,7 @@ public class IssuerManagementServiceImplTest {
         // Given
         IssuerRequest issuerRequest = new IssuerRequest("IssuerName", "IssuerId");
 
-        when(issuerRepository.existsByCardIssuerId(issuerRequest.getCardIssuerId())).thenReturn(false);
+        when(issuerRepository.existsByCardIssuerIdOrCardIssuerName(issuerRequest.getCardIssuerId(), issuerRequest.getCardIssuerName())).thenReturn(false);
 
         Issuer savedIssuer = new Issuer();
         savedIssuer.setCardIssuerName(issuerRequest.getCardIssuerName());
@@ -91,7 +91,7 @@ public class IssuerManagementServiceImplTest {
         // Given
         IssuerRequest issuerRequest = new IssuerRequest("IssuerName", "DuplicateIssuerId");
 
-        when(issuerRepository.existsByCardIssuerId(issuerRequest.getCardIssuerId())).thenReturn(true);
+        when(issuerRepository.existsByCardIssuerIdOrCardIssuerName(issuerRequest.getCardIssuerId(), issuerRequest.getCardIssuerName())).thenReturn(true);
 
         // When & Then
         when(exceptionHandler.processCustomException(
@@ -233,8 +233,9 @@ public class IssuerManagementServiceImplTest {
     void issuerExistenceCheck_shouldThrowExceptionWhenIssuerExists() {
         // Given
         String cardIssuerId = "ExistingIssuerId";
+        String cardIssuerName = "ExistingIssuerId";
 
-        when(issuerRepository.existsByCardIssuerId(cardIssuerId)).thenReturn(true);
+        when(issuerRepository.existsByCardIssuerIdOrCardIssuerName(cardIssuerId, cardIssuerName)).thenReturn(true);
 
         // When & Then
         when(exceptionHandler.processCustomException(
@@ -245,7 +246,7 @@ public class IssuerManagementServiceImplTest {
 
         // Verify that the expected exception is thrown when the issuer exists
         ZeusRuntimeException exception = assertThrows(ZeusRuntimeException.class,
-                () -> issuerService.issuerExistenceCheck(cardIssuerId));
+                () -> issuerService.issuerExistenceCheck(cardIssuerId, cardIssuerName));
 
         assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus());
         assertEquals(ISSUER_ALREADY_EXISTS_MESSAGE, exception.getErrors().get(0).getMessage());
