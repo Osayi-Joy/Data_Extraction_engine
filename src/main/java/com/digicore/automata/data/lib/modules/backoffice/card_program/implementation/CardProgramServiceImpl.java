@@ -48,25 +48,14 @@ public class CardProgramServiceImpl implements CardProgramService {
                 cardProgramRequest.getCardProgramName(), cardProgramRequest.getCardProgramId());
 
         CardProgram cardProgram = new CardProgram();
-        cardProgram.setCardProgramName(cardProgramRequest.getCardProgramName());
-        cardProgram.setCardProgramId(cardProgramRequest.getCardProgramId());
+
+        BeanUtilWrapper.copyNonNullProperties(cardProgramRequest,cardProgram);
+
 
         cardProgram.setIssuerId(issuerService
                 .getIssuerByIssuerId(cardProgramRequest.getIssuerId()));
         cardProgram.setCardSchemeId(cardSchemeService
                 .getCardSchemeByCardSchemeId(cardProgramRequest.getCardSchemeId()));
-        cardProgram.setDailyReconciliationTriggerTime(cardProgramRequest.getDailyReconciliationTriggerTime());
-        cardProgram.setMonthlyReportingTriggerDateAndTime(cardProgramRequest.getMonthlyReportingTriggerDateAndTime());
-        cardProgram.setCardSchemeSettlementDataSource(cardProgramRequest.getCardSchemeSettlementDataSource());
-        cardProgram.setInHouseTransactionDataSource(cardProgramRequest.getInHouseTransactionDataSource());
-        cardProgram.setReconciliationInHouseNotificationEmails(cardProgramRequest.getReconciliationInHouseNotificationEmails());
-        cardProgram.setReconciliationPartnerNotificationEmails(cardProgramRequest.getReconciliationPartnerNotificationEmails());
-        cardProgram.setReconciliationInHouseStorageLocation(cardProgramRequest.getReconciliationInHouseStorageLocation());
-        cardProgram.setReconciliationPartnerStorageLocation(cardProgramRequest.getReconciliationPartnerStorageLocation());
-        cardProgram.setRevenueReportingInHouseNotificationEmails(cardProgramRequest.getRevenueReportingInHouseNotificationEmails());
-        cardProgram.setRevenueReportingPartnerNotificationEmails(cardProgramRequest.getRevenueReportingPartnerNotificationEmails());
-        cardProgram.setRevenueReportingInHouseStorageLocation(cardProgramRequest.getRevenueReportingInHouseStorageLocation());
-        cardProgram.setRevenueReportingPartnerStorageLocation(cardProgramRequest.getRevenueReportingPartnerStorageLocation());
         cardProgram.setCardProgramStatus(Status.ACTIVE);
 
         cardProgram = cardProgramRepository.save(cardProgram);
