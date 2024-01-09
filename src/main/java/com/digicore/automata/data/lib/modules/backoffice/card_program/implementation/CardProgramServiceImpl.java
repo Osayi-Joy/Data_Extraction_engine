@@ -189,5 +189,77 @@ public class CardProgramServiceImpl implements CardProgramService {
         return cardProgramDto;
     }
 
+    /**
+     * enable card Program
+     * @param cardProgramId
+     */
+    @Override
+    public void enableCardProgram(String cardProgramId) {
+        CardProgram singleCard = cardProgramRepository.findFirstByCardProgramStatusAndCardProgramIdOrderByCreatedDate(Status.INACTIVE,
+                cardProgramId).orElseThrow(() ->
+                exceptionHandler.processBadRequestException(
+                        settingService.retrieveValue(CARD_PROGRAM_NOT_FOUND_MESSAGE_KEY),
+                        settingService.retrieveValue(CARD_PROGRAM_NOT_FOUND_CODE_KEY)
+                ));
+        singleCard.setCardProgramStatus(Status.ACTIVE);
+        cardProgramRepository.save(singleCard);
+
+    }
+
+    /**
+     * disable card Program
+     * @param cardProgramId
+     */
+    @Override
+    public void disableCardProgram(String cardProgramId) {
+        CardProgram singleCard = cardProgramRepository.findFirstByCardProgramStatusAndCardProgramIdOrderByCreatedDate(Status.ACTIVE,
+                cardProgramId).orElseThrow(() ->
+                exceptionHandler.processBadRequestException(
+                        settingService.retrieveValue(CARD_PROGRAM_NOT_FOUND_MESSAGE_KEY),
+                        settingService.retrieveValue(CARD_PROGRAM_NOT_FOUND_CODE_KEY)
+                ));
+        singleCard.setCardProgramStatus(Status.INACTIVE);
+        cardProgramRepository.save(singleCard);
+    }
+    /**
+     * update card program
+     * @param cardProgramRequest
+     * @return cardDto
+     */
+    @Override
+    public CardProgramDto updateCardProgram(CardProgramRequest cardProgramRequest) {
+
+        CardProgram cardProgram = getCardProgramDetail(cardProgramRequest.getCardProgramId());
+
+        BeanUtilWrapper.copyNonNullProperties(cardProgramRequest,cardProgram);
+        cardProgramRepository.save(cardProgram);
+
+        return mapToDto(cardProgram);
+
+    }
+
+    public CardProgram getCardProgramDetail(String cardProgramId){
+        return cardProgramRepository
+                .findFirstByCardProgramIdOrderByCreatedDate(cardProgramId)
+                .orElseThrow(() ->
+                        exceptionHandler.processBadRequestException(
+                                settingService.retrieveValue(CARD_PROGRAM_NOT_FOUND_MESSAGE_KEY),
+                                settingService.retrieveValue(CARD_PROGRAM_NOT_FOUND_CODE_KEY)
+                        )
+                );
+
+
+    }
+
+    @Override
+    public void existByStatusAndCardProgramId(Status cardProgramStatus, String cardProgramId){
+        if(!cardProgramRepository.existsByCardProgramStatusAndCardProgramId(cardProgramStatus,
+                cardProgramId)) {
+            throw exceptionHandler.processBadRequestException(
+                    settingService.retrieveValue(CARD_PROGRAM_NOT_FOUND_MESSAGE_KEY),
+                    settingService.retrieveValue(CARD_PROGRAM_NOT_FOUND_CODE_KEY));
+        }
+    }
+
 
 }

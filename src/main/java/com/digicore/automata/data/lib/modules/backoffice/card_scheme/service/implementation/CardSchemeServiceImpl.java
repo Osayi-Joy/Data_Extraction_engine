@@ -25,7 +25,6 @@ import java.util.List;
 
 import static com.digicore.automata.data.lib.modules.common.util.PageableUtil.*;
 import static com.digicore.automata.data.lib.modules.exception.messages.CardSchemeErrorMessages.*;
-import static com.digicore.automata.data.lib.modules.exception.messages.IssuerErrorMessages.*;
 
 /**
  * @author peaceobute
