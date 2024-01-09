@@ -133,7 +133,7 @@ public class CardProgramServiceImplTest {
     public void testRetrieveCardProgram() {
         // Given
         String cardProgramId = "testCardProgramId";
-        when(cardProgramRepository.findFirstByIsDeletedFalseAndCardProgramIdOrderByCreatedDate(anyString()))
+        when(cardProgramRepository.findFirstByCardProgramIdOrderByCreatedDate(anyString()))
                 .thenReturn(Optional.of(createTestCardProgram("testCardProgramId", "testCardProgramName")));
 
         // When

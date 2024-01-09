@@ -11,6 +11,7 @@ import com.digicore.automata.data.lib.modules.backoffice.issuer_management.servi
 import com.digicore.automata.data.lib.modules.common.dto.CsvDto;
 import com.digicore.automata.data.lib.modules.common.settings.service.SettingService;
 import com.digicore.automata.data.lib.modules.common.util.AutomataSearchRequest;
+import com.digicore.common.util.BeanUtilWrapper;
 import com.digicore.registhentication.common.dto.response.PaginatedResponseDTO;
 import com.digicore.registhentication.exceptions.ExceptionHandler;
 import com.digicore.registhentication.registration.enums.Status;
@@ -76,7 +77,7 @@ public class CardProgramServiceImpl implements CardProgramService {
     @Override
     public CardProgramDto retrieveCardProgram(String cardProgramId) {
         CardProgram cardProgram = cardProgramRepository
-                .findFirstByIsDeletedFalseAndCardProgramIdOrderByCreatedDate(cardProgramId)
+                .findFirstByCardProgramIdOrderByCreatedDate(cardProgramId)
                 .orElseThrow(() ->
                         exceptionHandler.processBadRequestException(
                                 settingService.retrieveValue(CARD_PROGRAM_NOT_FOUND_MESSAGE_KEY),
@@ -153,8 +154,8 @@ public class CardProgramServiceImpl implements CardProgramService {
             parameter.getFieldMappings().put("Revenue Reporting In-House Storage Location", CardProgramDto::getRevenueReportingInHouseStorageLocation);
             parameter.getFieldMappings().put("Revenue Reporting Partner Storage Location", CardProgramDto::getRevenueReportingPartnerStorageLocation);
             parameter.getFieldMappings().put("Card Program Status", cardProgramDto -> cardProgramDto.getCardProgramStatus().toString());
-            parameter.getFieldMappings().put("Created Date", CardProgramDto::getCreatedDate);
-            parameter.getFieldMappings().put("Last Modified Date", CardProgramDto::getLastModifiedDate);
+            parameter.getFieldMappings().put("Created Date", cardProgramDto -> cardProgramDto.getCreatedDate().toString());
+            parameter.getFieldMappings().put("Last Modified Date", cardProgramDto -> cardProgramDto.getLastModifiedDate().toString());
 
             parameter.setData(data);
 
@@ -194,25 +195,14 @@ public class CardProgramServiceImpl implements CardProgramService {
     private CardProgramDto mapToDto(CardProgram cardProgram) {
         CardProgramDto cardProgramDto = new CardProgramDto();
 
-        cardProgramDto.setCardProgramName(cardProgram.getCardProgramName());
-        cardProgramDto.setCardProgramId(cardProgram.getCardProgramId());
+        BeanUtilWrapper.copyNonNullProperties(cardProgram, cardProgramDto);
+
+
         cardProgramDto.setIssuerId(cardProgram.getIssuerId() != null ? cardProgram.getIssuerId().getCardIssuerId() : null);
         cardProgramDto.setCardSchemeId(cardProgram.getCardSchemeId() != null ? cardProgram.getCardSchemeId().getCardSchemeId() : null);
-        cardProgramDto.setDailyReconciliationTriggerTime(cardProgram.getDailyReconciliationTriggerTime());
-        cardProgramDto.setMonthlyReportingTriggerDateAndTime(cardProgram.getMonthlyReportingTriggerDateAndTime());
-        cardProgramDto.setCardSchemeSettlementDataSource(cardProgram.getCardSchemeSettlementDataSource());
-        cardProgramDto.setInHouseTransactionDataSource(cardProgram.getInHouseTransactionDataSource());
-        cardProgramDto.setReconciliationInHouseNotificationEmails(cardProgram.getReconciliationInHouseNotificationEmails());
-        cardProgramDto.setReconciliationPartnerNotificationEmails(cardProgram.getReconciliationPartnerNotificationEmails());
-        cardProgramDto.setReconciliationInHouseStorageLocation(cardProgram.getReconciliationInHouseStorageLocation());
-        cardProgramDto.setReconciliationPartnerStorageLocation(cardProgram.getReconciliationPartnerStorageLocation());
-        cardProgramDto.setRevenueReportingInHouseNotificationEmails(cardProgram.getRevenueReportingInHouseNotificationEmails());
-        cardProgramDto.setRevenueReportingPartnerNotificationEmails(cardProgram.getRevenueReportingPartnerNotificationEmails());
-        cardProgramDto.setRevenueReportingInHouseStorageLocation(cardProgram.getRevenueReportingInHouseStorageLocation());
-        cardProgramDto.setRevenueReportingPartnerStorageLocation(cardProgram.getRevenueReportingPartnerStorageLocation());
-        cardProgramDto.setCardProgramStatus(cardProgram.getCardProgramStatus());
-        cardProgramDto.setCreatedDate(cardProgram.getCreatedDate() != null ? cardProgram.getCreatedDate().toString() : null);
-        cardProgramDto.setLastModifiedDate(cardProgram.getLastModifiedDate() != null ? cardProgram.getLastModifiedDate().toString() : null);
+
+        cardProgramDto.setCreatedDate(cardProgram.getCreatedDate() != null ? cardProgram.getCreatedDate() : null);
+        cardProgramDto.setLastModifiedDate(cardProgram.getLastModifiedDate() != null ? cardProgram.getLastModifiedDate() : null);
         return cardProgramDto;
     }
 
