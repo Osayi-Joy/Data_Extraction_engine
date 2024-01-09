@@ -185,7 +185,7 @@ public class IssuerManagementServiceImplTest {
         existingIssuer.setCardIssuerId("ExistingIssuerId");
         existingIssuer.setIssuerStatus(Status.INACTIVE);
 
-        when(issuerRepository.findByIssuerStatusAndCardIssuerId(Status.INACTIVE, cardIssuerId))
+        when(issuerRepository.findFirstByIssuerStatusAndCardIssuerId(Status.INACTIVE, cardIssuerId))
                 .thenReturn(Optional.of(existingIssuer));
 
         when(issuerRepository.save(any(Issuer.class))).thenAnswer(invocation -> {
@@ -211,7 +211,7 @@ public class IssuerManagementServiceImplTest {
         existingIssuer.setCardIssuerId("ExistingIssuerId");
         existingIssuer.setIssuerStatus(Status.ACTIVE);
 
-        when(issuerRepository.findByIssuerStatusAndCardIssuerId(Status.ACTIVE, cardIssuerId))
+        when(issuerRepository.findFirstByIssuerStatusAndCardIssuerId(Status.ACTIVE, cardIssuerId))
                 .thenReturn(Optional.of(existingIssuer));
 
         when(issuerRepository.save(any(Issuer.class))).thenAnswer(invocation -> {

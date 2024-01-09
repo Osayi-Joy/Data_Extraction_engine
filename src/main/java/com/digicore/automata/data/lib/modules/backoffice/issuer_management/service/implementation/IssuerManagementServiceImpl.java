@@ -151,7 +151,7 @@ public class IssuerManagementServiceImpl implements IssuerService {
 
     @Override
     public void enableIssuer(String cardIssuerId) {
-        Issuer issuer = issuerRepository.findByIssuerStatusAndCardIssuerId(Status.INACTIVE,
+        Issuer issuer = issuerRepository.findFirstByIssuerStatusAndCardIssuerId(Status.INACTIVE,
                 cardIssuerId).orElseThrow(() ->
                 exceptionHandler.processBadRequestException(
                         settingService.retrieveValue(ISSUER_NOT_FOUND_MESSAGE_KEY),
@@ -163,7 +163,7 @@ public class IssuerManagementServiceImpl implements IssuerService {
 
     @Override
     public void disableIssuer(String cardIssuerId) {
-        Issuer issuer = issuerRepository.findByIssuerStatusAndCardIssuerId(Status.ACTIVE,
+        Issuer issuer = issuerRepository.findFirstByIssuerStatusAndCardIssuerId(Status.ACTIVE,
                 cardIssuerId).orElseThrow(() ->
                 exceptionHandler.processBadRequestException(
                         settingService.retrieveValue(ISSUER_NOT_FOUND_MESSAGE_KEY),
