@@ -107,7 +107,7 @@ public class IssuerManagementServiceImpl implements IssuerService {
 
     @Override
     public IssuerDto createIssuer(IssuerRequest issuerRequest) {
-        if (issuerRepository.existsByCardIssuerId(issuerRequest.getCardIssuerId())) {
+        if (issuerRepository.existsByCardIssuerIdOrCardIssuerName(issuerRequest.getCardIssuerId(), issuerRequest.getCardIssuerName())) {
             throw exceptionHandler.processCustomException(
                     settingService.retrieveValue(ISSUER_ALREADY_EXISTS_MESSAGE_KEY),
                     settingService.retrieveValue(ISSUER_ALREADY_EXISTS_CODE_KEY),
@@ -151,7 +151,7 @@ public class IssuerManagementServiceImpl implements IssuerService {
 
     @Override
     public void enableIssuer(String cardIssuerId) {
-        Issuer issuer = issuerRepository.findByIssuerStatusAndCardIssuerId(Status.INACTIVE,
+        Issuer issuer = issuerRepository.findFirstByIssuerStatusAndCardIssuerId(Status.INACTIVE,
                 cardIssuerId).orElseThrow(() ->
                 exceptionHandler.processBadRequestException(
                         settingService.retrieveValue(ISSUER_NOT_FOUND_MESSAGE_KEY),
@@ -163,7 +163,7 @@ public class IssuerManagementServiceImpl implements IssuerService {
 
     @Override
     public void disableIssuer(String cardIssuerId) {
-        Issuer issuer = issuerRepository.findByIssuerStatusAndCardIssuerId(Status.ACTIVE,
+        Issuer issuer = issuerRepository.findFirstByIssuerStatusAndCardIssuerId(Status.ACTIVE,
                 cardIssuerId).orElseThrow(() ->
                 exceptionHandler.processBadRequestException(
                         settingService.retrieveValue(ISSUER_NOT_FOUND_MESSAGE_KEY),
@@ -174,8 +174,8 @@ public class IssuerManagementServiceImpl implements IssuerService {
     }
 
     @Override
-    public void issuerExistenceCheck(String cardIssuerId){
-        if (issuerRepository.existsByCardIssuerId(cardIssuerId)) {
+    public void issuerExistenceCheck(String cardIssuerId, String cardIssuerName){
+        if (issuerRepository.existsByCardIssuerIdOrCardIssuerName(cardIssuerId, cardIssuerName)) {
             throw exceptionHandler.processCustomException(
                     settingService.retrieveValue(ISSUER_ALREADY_EXISTS_MESSAGE_KEY),
                     settingService.retrieveValue(ISSUER_ALREADY_EXISTS_CODE_KEY),
@@ -202,6 +202,19 @@ public class IssuerManagementServiceImpl implements IssuerService {
                             settingService.retrieveValue(ISSUER_NOT_FOUND_CODE_KEY));
         }
     }
+
+    @Override
+    public Issuer getIssuerByIssuerId(String cardIssuerId) {
+        return issuerRepository
+                .findFirstByIsDeletedFalseAndCardIssuerIdOrderByCreatedDate(cardIssuerId)
+                .orElseThrow(() ->
+                        exceptionHandler.processBadRequestException(
+                                settingService.retrieveValue(ISSUER_NOT_FOUND_MESSAGE_KEY),
+                                settingService.retrieveValue(ISSUER_NOT_FOUND_CODE_KEY)
+                        )
+                );
+    }
+
     private PaginatedResponseDTO<IssuerDto> getIssuerPaginatedResponse(Page<Issuer> issuerPage) {
         return PaginatedResponseDTO.<IssuerDto>builder()
                 .content(issuerPage.getContent().stream().map(this::mapIssuerEntityToDto)

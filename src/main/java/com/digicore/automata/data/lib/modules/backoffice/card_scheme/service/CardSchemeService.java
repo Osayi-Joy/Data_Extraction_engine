@@ -2,6 +2,7 @@ package com.digicore.automata.data.lib.modules.backoffice.card_scheme.service;
 
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardDto;
 import com.digicore.automata.data.lib.modules.backoffice.card_scheme.dto.CardRequest;
+import com.digicore.automata.data.lib.modules.backoffice.card_scheme.model.CardScheme;
 import com.digicore.automata.data.lib.modules.backoffice.issuer_management.dto.IssuerDto;
 import com.digicore.automata.data.lib.modules.common.dto.CsvDto;
 import com.digicore.automata.data.lib.modules.common.util.AutomataSearchRequest;
@@ -39,4 +40,5 @@ public interface CardSchemeService {
     void cardSchemeNotFoundCheck(String cardSchemeId);
 
     void existByStatusAndCardSchemeId(Status cardStatus, String cardSchemeId);
+    CardScheme getCardSchemeByCardSchemeId(String cardSchemeId);
 }
