@@ -197,12 +197,6 @@ public class CardProgramServiceImpl implements CardProgramService {
 
         BeanUtilWrapper.copyNonNullProperties(cardProgram, cardProgramDto);
 
-
-        cardProgramDto.setIssuerId(cardProgram.getIssuerId() != null ? cardProgram.getIssuerId().getCardIssuerId() : null);
-        cardProgramDto.setCardSchemeId(cardProgram.getCardSchemeId() != null ? cardProgram.getCardSchemeId().getCardSchemeId() : null);
-
-        cardProgramDto.setCreatedDate(cardProgram.getCreatedDate() != null ? cardProgram.getCreatedDate() : null);
-        cardProgramDto.setLastModifiedDate(cardProgram.getLastModifiedDate() != null ? cardProgram.getLastModifiedDate() : null);
         return cardProgramDto;
     }
 
