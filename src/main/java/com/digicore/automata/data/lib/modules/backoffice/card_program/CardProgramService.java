@@ -5,6 +5,7 @@ import com.digicore.automata.data.lib.modules.backoffice.card_program.dto.CardPr
 import com.digicore.automata.data.lib.modules.common.dto.CsvDto;
 import com.digicore.automata.data.lib.modules.common.util.AutomataSearchRequest;
 import com.digicore.registhentication.common.dto.response.PaginatedResponseDTO;
+import com.digicore.registhentication.registration.enums.Status;
 
 /**
  * @author Joy Osayi
@@ -23,4 +24,12 @@ public interface CardProgramService {
     CsvDto<CardProgramDto> prepareCardProgramsCSV(CsvDto<CardProgramDto> parameter);
 
     void cardProgramExistenceCheck(String cardProgramName, String cardProgramId);
+
+    void enableCardProgram(String cardProgramId);
+
+    void disableCardProgram(String cardProgramId);
+
+    CardProgramDto updateCardProgram(CardProgramRequest cardProgramRequest);
+
+    void existByStatusAndCardProgramId(Status cardProgramStatus, String cardProgramId);
 }
