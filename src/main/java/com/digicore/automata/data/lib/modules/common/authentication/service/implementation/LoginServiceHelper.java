@@ -43,6 +43,7 @@ public class LoginServiceHelper {
     additionalInformation.put("role", userDetails.getAssignedRole());
     additionalInformation.put(
         "name", userDetails.getFirstName().concat(" ").concat(userDetails.getLastName()));
+    additionalInformation.put("isDefaultPassword", userDetails.isDefaultPassword());
     return LoginResponse.builder()
         .accessToken(jwtHelper.createJwtForClaims(loginRequestDTO.getUsername(), claims))
         .additionalInformation(additionalInformation)
