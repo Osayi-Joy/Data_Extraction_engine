@@ -16,10 +16,12 @@ import com.digicore.automata.data.lib.modules.backoffice.authorization.model.Bac
 import com.digicore.registhentication.authentication.dtos.request.LoginRequestDTO;
 import com.digicore.registhentication.authentication.dtos.response.LoginResponse;
 import com.digicore.registhentication.authentication.services.LoginAttemptService;
+import org.jboss.aerogear.security.otp.Totp;
 import com.digicore.registhentication.authentication.services.LoginService;
 import com.digicore.registhentication.exceptions.ExceptionHandler;
 import com.digicore.registhentication.registration.enums.Status;
 import lombok.RequiredArgsConstructor;
+import org.jboss.aerogear.security.otp.api.Base32;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,6 +30,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
@@ -51,6 +55,8 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
  private final LoginAttemptService loginAttemptService;
  private final PasswordEncoder passwordEncoder;
  private final ExceptionHandler<String, String, HttpStatus, String> exceptionHandler;
+ public static String QR_PREFIX =
+         "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
  @Override
  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
   BackOfficeUserAuthProfile userFoundInDB =
@@ -136,4 +142,34 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
 
   return userProfileDTO;
  }
+
+  public String generateSecretKey() {
+  //save this secrete in db
+    return Base32.random();
+  }
+
+  public boolean verifyTotp(String code, String secret) {
+    Totp totp = new Totp(secret);
+     if (!isValidLong(code) || !totp.verify(secret)) {
+       return false;
+     }
+     return true;
+  }
+
+  private boolean isValidLong(String code) {
+    try {
+     Long.parseLong(code);
+    } catch (NumberFormatException e) {
+     return false;
+    }
+    return true;
+  }
+
+  public String generateQRUrl() throws UnsupportedEncodingException {
+   return QR_PREFIX + URLEncoder.encode(String.format(
+                   "otpauth://totp/%s:%s?secret=%s&issuer=%s",
+                   "APP_NAME", "email", "secret", "APP_NAME"),
+           "UTF-8");
+  }
+
 }
