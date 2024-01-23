@@ -141,6 +141,7 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
   userProfileDTO.setPassword(userFoundInDB.getPassword());
   userProfileDTO.setPin(userFoundInDB.getPin());
   userProfileDTO.setDefaultPassword(userFoundInDB.isDefaultPassword());
+  userProfileDTO.setEnabled2FA(userFoundInDB.getSecret() != null);
   userProfileDTO.setPermissions(getGrantedAuthorities(userFoundInDB.getAssignedRole()));
 
   return userProfileDTO;
@@ -148,10 +149,8 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
 
  public String generateSecretKey() {
   Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-  if (auth.getPrincipal() instanceof UserDetails) {
-   UserDetails userDetails = (UserDetails) auth.getPrincipal();
-   String username = userDetails.getUsername();
-
+  if (auth.isAuthenticated()) {
+   String username = auth.getName();
    String secret = Base32.random();
    BackOfficeUserAuthProfile userFoundInDB =
            backOfficeUserAuthProfileRepository
@@ -173,9 +172,8 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
 
  public boolean verifyTotp(String code) {
   Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-  if (auth.getPrincipal() instanceof UserDetails) {
-   UserDetails userDetails = (UserDetails) auth.getPrincipal();
-   String username = userDetails.getUsername();
+  if (auth.isAuthenticated()) {
+   String username = auth.getName();
 
    BackOfficeUserAuthProfile userFoundInDB =
            backOfficeUserAuthProfileRepository
@@ -208,9 +206,8 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
 
  public String generateQRUrl() throws UnsupportedEncodingException {
   Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-  if (auth.getPrincipal() instanceof UserDetails) {
-   UserDetails userDetails = (UserDetails) auth.getPrincipal();
-   String username = userDetails.getUsername();
+  if (auth.isAuthenticated()) {
+   String username = auth.getName();
 
    BackOfficeUserAuthProfile userFoundInDB =
            backOfficeUserAuthProfileRepository

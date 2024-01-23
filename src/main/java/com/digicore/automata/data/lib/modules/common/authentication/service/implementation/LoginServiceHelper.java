@@ -44,6 +44,7 @@ public class LoginServiceHelper {
     additionalInformation.put(
         "name", userDetails.getFirstName().concat(" ").concat(userDetails.getLastName()));
     additionalInformation.put("isDefaultPassword", userDetails.isDefaultPassword());
+    additionalInformation.put("isEnabled2FA", userDetails.isEnabled2FA());
     return LoginResponse.builder()
         .accessToken(jwtHelper.createJwtForClaims(loginRequestDTO.getUsername(), claims))
         .additionalInformation(additionalInformation)
