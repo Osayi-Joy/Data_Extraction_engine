@@ -20,4 +20,17 @@ public interface SettingService {
  String retrieveValue(String key);
 
  List<SettingDTO> retrieveAllSettings();
+
+
+ /** LoggedIn User Setting */
+
+ SettingDTO createUserSetting(SettingDTO settingDTO);
+
+ SettingDTO updateUserSetting(SettingDTO settingDTO);
+
+ boolean userSettingExists(String settingKey);
+
+ Optional<SettingDTO> retrieveUserSetting(String key);
+
+ List<SettingDTO> retrieveAllUserSettings();
 }

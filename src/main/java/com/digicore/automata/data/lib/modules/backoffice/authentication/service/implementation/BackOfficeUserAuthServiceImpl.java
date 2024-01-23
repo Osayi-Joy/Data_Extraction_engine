@@ -8,11 +8,14 @@ import com.digicore.automata.data.lib.modules.common.authentication.dto.UserProf
 import com.digicore.automata.data.lib.modules.common.authentication.service.implementation.LoginServiceHelper;
 import com.digicore.automata.data.lib.modules.common.authorization.dto.RoleDTO;
 import com.digicore.automata.data.lib.modules.common.authorization.service.RoleService;
+import com.digicore.automata.data.lib.modules.common.settings.dto.SettingDTO;
+import com.digicore.automata.data.lib.modules.common.settings.model.Setting;
 import com.digicore.automata.data.lib.modules.common.settings.service.SettingService;
 import com.digicore.automata.data.lib.modules.backoffice.authentication.model.BackOfficeUserAuthProfile;
 import com.digicore.automata.data.lib.modules.backoffice.authentication.repository.BackOfficeUserAuthProfileRepository;
 import com.digicore.automata.data.lib.modules.backoffice.authorization.model.BackOfficePermission;
 import com.digicore.automata.data.lib.modules.backoffice.authorization.model.BackOfficeRole;
+import com.digicore.common.util.BeanUtilWrapper;
 import com.digicore.registhentication.authentication.dtos.request.LoginRequestDTO;
 import com.digicore.registhentication.authentication.dtos.response.LoginResponse;
 import com.digicore.registhentication.authentication.services.LoginAttemptService;
@@ -23,7 +26,9 @@ import com.digicore.registhentication.registration.enums.Status;
 import lombok.RequiredArgsConstructor;
 import org.jboss.aerogear.security.otp.api.Base32;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -33,15 +38,14 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.digicore.automata.data.lib.modules.exception.messages.BackOfficeProfileErrorMessage.BACKOFFICE_PROFILE_DISABLED_CODE_KEY;
 import static com.digicore.automata.data.lib.modules.exception.messages.BackOfficeProfileErrorMessage.BACKOFFICE_PROFILE_DISABLED_MESSAGE_KEY;
 import static com.digicore.automata.data.lib.modules.exception.messages.LoginErrorMessage.*;
 import static com.digicore.automata.data.lib.modules.exception.messages.LoginErrorMessage.LOGIN_FAILED_CODE_KEY;
+import static com.digicore.automata.data.lib.modules.exception.messages.RegistrationErrorMessage.PROFILE_NOT_EXIST_CODE_KEY;
+import static com.digicore.automata.data.lib.modules.exception.messages.RegistrationErrorMessage.PROFILE_NOT_EXIST_MESSAGE_KEY;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +61,7 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
  private final ExceptionHandler<String, String, HttpStatus, String> exceptionHandler;
  public static String QR_PREFIX =
          "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
+
  @Override
  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
   BackOfficeUserAuthProfile userFoundInDB =
@@ -114,7 +119,6 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
  }
 
 
-
  public void disableInactiveAccounts(LocalDate thresholdDate) {
   List<BackOfficeUserAuthProfile> inactiveUsers = backOfficeUserAuthProfileRepository
           .findByLastLoginDateBeforeAndStatus(thresholdDate.atStartOfDay(), Status.ACTIVE);
@@ -122,7 +126,6 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
   inactiveUsers.forEach(user -> user.setStatus(Status.INACTIVE));
   backOfficeUserAuthProfileRepository.saveAll(inactiveUsers);
  }
-
 
 
  private UserProfileDTO getUserProfileDTO(
@@ -143,33 +146,88 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
   return userProfileDTO;
  }
 
-  public String generateSecretKey() {
-  //save this secrete in db
-    return Base32.random();
+ public String generateSecretKey() {
+  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+  if (auth.getPrincipal() instanceof UserDetails) {
+   UserDetails userDetails = (UserDetails) auth.getPrincipal();
+   String username = userDetails.getUsername();
+
+   String secret = Base32.random();
+   BackOfficeUserAuthProfile userFoundInDB =
+           backOfficeUserAuthProfileRepository
+                   .findFirstByUsernameOrderByCreatedDate(username)
+                   .orElseThrow(
+                           () ->
+                                   exceptionHandler.processCustomException(
+                                           settingService.retrieveValue(PROFILE_NOT_EXIST_MESSAGE_KEY),
+                                           settingService.retrieveValue(PROFILE_NOT_EXIST_CODE_KEY),
+                                           HttpStatus.UNAUTHORIZED));
+
+   userFoundInDB.setSecret(secret);
+   backOfficeUserAuthProfileRepository.save(userFoundInDB);
+
+    return secret;
+  }
+    return null;
+ }
+
+ public boolean verifyTotp(String code) {
+  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+  if (auth.getPrincipal() instanceof UserDetails) {
+   UserDetails userDetails = (UserDetails) auth.getPrincipal();
+   String username = userDetails.getUsername();
+
+   BackOfficeUserAuthProfile userFoundInDB =
+           backOfficeUserAuthProfileRepository
+                   .findFirstByUsernameOrderByCreatedDate(username)
+                   .orElseThrow(
+                           () ->
+                                   exceptionHandler.processCustomException(
+                                           settingService.retrieveValue(PROFILE_NOT_EXIST_MESSAGE_KEY),
+                                           settingService.retrieveValue(PROFILE_NOT_EXIST_CODE_KEY),
+                                           HttpStatus.UNAUTHORIZED));
+
+   Totp totp = new Totp(userFoundInDB.getSecret());
+   if (!isValidLong(code) || !totp.verify(code)) {
+       return false;
+   }
+      return true;
   }
 
-  public boolean verifyTotp(String code, String secret) {
-    Totp totp = new Totp(secret);
-     if (!isValidLong(code) || !totp.verify(secret)) {
-       return false;
-     }
-     return true;
+     return false;
   }
 
   private boolean isValidLong(String code) {
-    try {
-     Long.parseLong(code);
-    } catch (NumberFormatException e) {
-     return false;
-    }
-    return true;
+      try {
+       Long.parseLong(code);
+      } catch (NumberFormatException e) {
+       return false;
+      }
+      return true;
   }
 
-  public String generateQRUrl() throws UnsupportedEncodingException {
+ public String generateQRUrl() throws UnsupportedEncodingException {
+  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+  if (auth.getPrincipal() instanceof UserDetails) {
+   UserDetails userDetails = (UserDetails) auth.getPrincipal();
+   String username = userDetails.getUsername();
+
+   BackOfficeUserAuthProfile userFoundInDB =
+           backOfficeUserAuthProfileRepository
+                   .findFirstByUsernameOrderByCreatedDate(username)
+                   .orElseThrow(
+                           () ->
+                                   exceptionHandler.processCustomException(
+                                           settingService.retrieveValue(PROFILE_NOT_EXIST_MESSAGE_KEY),
+                                           settingService.retrieveValue(PROFILE_NOT_EXIST_CODE_KEY),
+                                           HttpStatus.UNAUTHORIZED));
+
    return QR_PREFIX + URLEncoder.encode(String.format(
                    "otpauth://totp/%s:%s?secret=%s&issuer=%s",
-                   "APP_NAME", "email", "secret", "APP_NAME"),
+                   "AUTOMATA", username, userFoundInDB.getSecret(), "AUTOMATA"),
            "UTF-8");
   }
+   return null;
+ }
 
 }
