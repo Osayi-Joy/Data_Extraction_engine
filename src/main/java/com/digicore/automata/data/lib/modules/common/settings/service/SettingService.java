@@ -21,16 +21,4 @@ public interface SettingService {
 
  List<SettingDTO> retrieveAllSettings();
 
-
- /** LoggedIn User Setting */
-
- SettingDTO createUserSetting(SettingDTO settingDTO);
-
- SettingDTO updateUserSetting(SettingDTO settingDTO);
-
- boolean userSettingExists(String settingKey);
-
- Optional<SettingDTO> retrieveUserSetting(String key);
-
- List<SettingDTO> retrieveAllUserSettings();
 }

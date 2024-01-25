@@ -18,6 +18,7 @@ import com.digicore.automata.data.lib.modules.backoffice.authorization.model.Bac
 import com.digicore.common.util.BeanUtilWrapper;
 import com.digicore.registhentication.authentication.dtos.request.LoginRequestDTO;
 import com.digicore.registhentication.authentication.dtos.response.LoginResponse;
+import com.digicore.registhentication.authentication.enums.AuthenticationType;
 import com.digicore.registhentication.authentication.services.LoginAttemptService;
 import org.jboss.aerogear.security.otp.Totp;
 import com.digicore.registhentication.authentication.services.LoginService;
@@ -59,8 +60,6 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
  private final LoginAttemptService loginAttemptService;
  private final PasswordEncoder passwordEncoder;
  private final ExceptionHandler<String, String, HttpStatus, String> exceptionHandler;
- public static String QR_PREFIX =
-         "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
 
  @Override
  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -87,10 +86,13 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
   UserProfileDTO userDetails =
           (UserProfileDTO) this.loadUserByUsername(loginRequestDTO.getUsername());
   backOfficeRoleServiceImpl.checkRoleStatus(userDetails.getAssignedRole());
-  if (passwordEncoder.matches(loginRequestDTO.getPassword(), userDetails.getPassword())) {
-   loginAttemptService.verifyLoginAccess(userDetails.getUsername(), true);
-   return loginServiceHelper.getLoginResponse(loginRequestDTO, userDetails);
-  }
+   if (passwordEncoder.matches(loginRequestDTO.getPassword(), userDetails.getPassword())) {
+    loginAttemptService.verifyLoginAccess(userDetails.getUsername(), true);
+    if(userDetails.isEnabled2FA()){
+     return loginServiceHelper.get2faEnabledLoginResponse();
+    }
+    return loginServiceHelper.getLoginResponse(loginRequestDTO, userDetails);
+   }
 
   loginAttemptService.verifyLoginAccess(userDetails.getUsername(), false);
   exceptionHandler.processCustomException(
@@ -99,6 +101,7 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
           HttpStatus.UNAUTHORIZED,
           settingService.retrieveValue(LOGIN_FAILED_CODE_KEY));
   return null;
+
  }
 
  private Set<SimpleGrantedAuthority> getGrantedAuthorities(Collection<BackOfficePermission> privileges) {
@@ -141,90 +144,10 @@ public class BackOfficeUserAuthServiceImpl implements UserDetailsService,
   userProfileDTO.setPassword(userFoundInDB.getPassword());
   userProfileDTO.setPin(userFoundInDB.getPin());
   userProfileDTO.setDefaultPassword(userFoundInDB.isDefaultPassword());
-  userProfileDTO.setEnabled2FA(userFoundInDB.getSecret() != null);
+  userProfileDTO.setEnabled2FA(userFoundInDB.isEnabled2fa());
   userProfileDTO.setPermissions(getGrantedAuthorities(userFoundInDB.getAssignedRole()));
 
   return userProfileDTO;
- }
-
- public String generateSecretKey() {
-  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-  if (auth.isAuthenticated()) {
-   String username = auth.getName();
-   String secret = Base32.random();
-   BackOfficeUserAuthProfile userFoundInDB =
-           backOfficeUserAuthProfileRepository
-                   .findFirstByUsernameOrderByCreatedDate(username)
-                   .orElseThrow(
-                           () ->
-                                   exceptionHandler.processCustomException(
-                                           settingService.retrieveValue(PROFILE_NOT_EXIST_MESSAGE_KEY),
-                                           settingService.retrieveValue(PROFILE_NOT_EXIST_CODE_KEY),
-                                           HttpStatus.UNAUTHORIZED));
-
-   userFoundInDB.setSecret(secret);
-   backOfficeUserAuthProfileRepository.save(userFoundInDB);
-
-    return secret;
-  }
-    return null;
- }
-
- public boolean verifyTotp(String code) {
-  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-  if (auth.isAuthenticated()) {
-   String username = auth.getName();
-
-   BackOfficeUserAuthProfile userFoundInDB =
-           backOfficeUserAuthProfileRepository
-                   .findFirstByUsernameOrderByCreatedDate(username)
-                   .orElseThrow(
-                           () ->
-                                   exceptionHandler.processCustomException(
-                                           settingService.retrieveValue(PROFILE_NOT_EXIST_MESSAGE_KEY),
-                                           settingService.retrieveValue(PROFILE_NOT_EXIST_CODE_KEY),
-                                           HttpStatus.UNAUTHORIZED));
-
-   Totp totp = new Totp(userFoundInDB.getSecret());
-   if (!isValidLong(code) || !totp.verify(code)) {
-       return false;
-   }
-      return true;
-  }
-
-     return false;
-  }
-
-  private boolean isValidLong(String code) {
-      try {
-       Long.parseLong(code);
-      } catch (NumberFormatException e) {
-       return false;
-      }
-      return true;
-  }
-
- public String generateQRUrl() throws UnsupportedEncodingException {
-  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-  if (auth.isAuthenticated()) {
-   String username = auth.getName();
-
-   BackOfficeUserAuthProfile userFoundInDB =
-           backOfficeUserAuthProfileRepository
-                   .findFirstByUsernameOrderByCreatedDate(username)
-                   .orElseThrow(
-                           () ->
-                                   exceptionHandler.processCustomException(
-                                           settingService.retrieveValue(PROFILE_NOT_EXIST_MESSAGE_KEY),
-                                           settingService.retrieveValue(PROFILE_NOT_EXIST_CODE_KEY),
-                                           HttpStatus.UNAUTHORIZED));
-
-   return QR_PREFIX + URLEncoder.encode(String.format(
-                   "otpauth://totp/%s:%s?secret=%s&issuer=%s",
-                   "AUTOMATA", username, userFoundInDB.getSecret(), "AUTOMATA"),
-           "UTF-8");
-  }
-   return null;
  }
 
 }

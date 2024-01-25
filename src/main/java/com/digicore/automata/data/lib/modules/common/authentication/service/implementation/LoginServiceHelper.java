@@ -50,4 +50,13 @@ public class LoginServiceHelper {
         .additionalInformation(additionalInformation)
         .build();
   }
+
+  public LoginResponse get2faEnabledLoginResponse() {
+    Map<String, Object> additionalInformation = new HashMap<>();
+    additionalInformation.put("isEnabled2FA", true);
+    additionalInformation.put("message", "Register With Authentication App");
+    return LoginResponse.builder()
+            .additionalInformation(additionalInformation)
+            .build();
+  }
 }
